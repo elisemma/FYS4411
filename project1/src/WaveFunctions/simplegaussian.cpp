@@ -21,15 +21,8 @@ double SimpleGaussian::calculate_r_squared(std::vector<Particle*> particles) {
     return r_squared;
 }
 
-// double SimpleGaussian::evaluate(std::vector<class Particle*> particles) {
 double SimpleGaussian::evaluate(std::vector<Particle*> particles) {
     double r_squared = calculate_r_squared(particles);
-    // double r_squared = 0;
-    // for (Particle* particle : particles) {
-    //     for (double pos_i : particle->getPosition()) {
-    //         r_squared += pow(pos_i, 2);
-    //     }
-    // }
     return exp(-alpha * r_squared);
 }
 

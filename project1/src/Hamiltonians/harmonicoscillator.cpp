@@ -1,8 +1,8 @@
 #include "Hamiltonians/harmonicoscillator.h"
 #include <cassert>
 #include <iostream>
-#include "system.h"
-#include "particle.h"
+#include "project1/system.h"
+#include "project1/particle.h"
 #include "WaveFunctions/wavefunction.h"
 
 using std::cout;

@@ -1,7 +1,7 @@
-#include "system.h"
+#include "project1/system.h"
 #include <cassert>
-#include "sampler.h"
-#include "particle.h"
+#include "project1/sampler.h"
+#include "project1/particle.h"
 #include "WaveFunctions/wavefunction.h"
 #include "Hamiltonians/hamiltonian.h"
 #include "InitialStates/initialstate.h"

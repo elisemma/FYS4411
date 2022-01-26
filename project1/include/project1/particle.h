@@ -10,7 +10,7 @@ public:
     std::vector<double> getPosition() { return m_position; }
 
 private:
-    int     m_numberOfDimensions = 0;
+    int m_numberOfDimensions = 0;
     std::vector<double> m_position = std::vector<double>();
 };
 

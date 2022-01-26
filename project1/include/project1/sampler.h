@@ -7,7 +7,7 @@ public:
     void sample(bool acceptedStep);
     void printOutputToTerminal();
     void computeAverages();
-    double getEnergy()          { return m_energy; }
+    double getEnergy() { return m_energy; }
 
 private:
     int     m_numberOfMetropolisSteps = 0;

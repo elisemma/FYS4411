@@ -29,19 +29,6 @@ void RandomUniform::setupInitialState() {
         std::vector<double> position = std::vector<double>();
 
         for (int j=0; j < m_numberOfDimensions; j++) {
-            /* This is where you should actually place the particles in
-             * some positions, according to some rule. Since this class is
-             * called random uniform, they should be placed randomly according
-             * to a uniform distribution here. However, later you will write
-             * more sub-classes of the InitialState class in which the
-             * particles are placed in other configurations.
-             *
-             * Note: For now, the particles are simply placed in positions
-             * according to their index in the particles list (this is
-             * obviously NOT a good idea).
-             */
-
-            // position.push_back(i);
             double random_double = randomEngine->nextDouble();
             double random_pos = random_double * 2 - 1;
             position.push_back(random_pos);

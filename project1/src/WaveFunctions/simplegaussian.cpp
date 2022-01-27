@@ -10,19 +10,8 @@ SimpleGaussian::SimpleGaussian(System* system, double alpha_) : WaveFunction(sys
     this->alpha = alpha_;
 }
 
-// TODO: Should this value be saved/cached?
-double SimpleGaussian::calculate_r_squared(std::vector<Particle*> particles) {
-    double r_squared = 0;
-    for (Particle* particle : particles) {
-        for (double pos_i : particle->getPosition()) {
-            r_squared += pow(pos_i, 2);
-        }
-    }
-    return r_squared;
-}
-
 double SimpleGaussian::evaluate(std::vector<Particle*> particles) {
-    double r_squared = calculate_r_squared(particles);
+    double r_squared = m_system->calculate_r_squared(particles);
     return exp(-alpha * r_squared);
 }
 
@@ -36,6 +25,6 @@ double SimpleGaussian::computeDoubleDerivative(std::vector<class Particle*> part
      * This quantity is needed to compute the (local) energy (consider the
      * Schrödinger equation to see how the two are related).
      */
-    double r_squared = calculate_r_squared(particles);
+    double r_squared = m_system->calculate_r_squared(particles);
     return 0; // the analytical expression goes here
 }

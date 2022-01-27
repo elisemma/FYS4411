@@ -16,6 +16,17 @@ System::System(int seed) {
     m_random = new Random(seed);
 }
 
+// TODO: Should this value be saved/cached?
+double System::calculate_r_squared(std::vector<Particle*> particles) {
+    double r_squared = 0;
+    for (Particle* particle : particles) {
+        for (double pos_i : particle->getPosition()) {
+            r_squared += pow(pos_i, 2);
+        }
+    }
+    return r_squared;
+}
+
 bool System::metropolisStep() {
     /* Perform the actual Metropolis step: Choose a particle at random and
      * change it's position by a random amount, and check if the step is

@@ -24,6 +24,7 @@ public:
     int getNumberOfDimensions()         { return m_numberOfDimensions; }
     int getNumberOfMetropolisSteps()    { return m_numberOfMetropolisSteps; }
     double getEquilibrationFraction()   { return m_equilibrationFraction; }
+    double calculate_r_squared(std::vector<Particle*> particles);
 
 private:
     int                             m_numberOfParticles = 0;

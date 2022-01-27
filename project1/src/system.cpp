@@ -16,12 +16,42 @@ System::System(int seed) {
     m_random = new Random(seed);
 }
 
+// TODO: Should this value be saved/cached?
+double System::calculate_r_squared(std::vector<Particle*> particles) {
+    double r_squared = 0;
+    for (Particle* particle : particles) {
+        for (double pos_i : particle->getPosition()) {
+            r_squared += pow(pos_i, 2);
+        }
+    }
+    return r_squared;
+}
+
 bool System::metropolisStep() {
     /* Perform the actual Metropolis step: Choose a particle at random and
      * change it's position by a random amount, and check if the step is
      * accepted by the Metropolis test (compare the wave function evaluated
      * at this new position with the one at the old position).
      */
+
+    Particle *particle = m_particles[m_random->nextInt(m_numberOfParticles - 1)];
+
+    double movement[m_numberOfDimensions], wave_before = m_waveFunction->evaluate(m_particles);
+
+	for (int i = 0; i < m_numberOfDimensions; i++) {
+        // TODO: should this be -.5 or *2-1?
+        movement[i] = m_stepLength*(m_random->nextDouble() - 0.5);
+        particle->adjustPosition(movement[i], i);
+	}
+
+	double wave_after = m_waveFunction->evaluate(m_particles);
+    // TODO: Do we need them pows?
+	double ratio = pow(wave_after, 2)/pow(wave_before, 2);
+
+    // should we check if ratio is more than 1?
+    if (m_random->nextDouble() < ratio) return true;
+
+    for (int i = 0; i < m_numberOfDimensions; i++) particle->adjustPosition(-movement[i], i);
 
     return false;
 }

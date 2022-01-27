@@ -23,6 +23,25 @@ bool System::metropolisStep() {
      * at this new position with the one at the old position).
      */
 
+    // TODO: Looks like we need nextInt - 1, but I'm not sure why. It seems to crash without the -1 tho?
+    Particle *particle = m_particles[m_random->nextInt(m_numberOfParticles - 1)];
+
+    double movement[m_numberOfDimensions];
+	double wave_before = m_waveFunction->evaluate(m_particles);
+
+	for( int i = 0; i < m_numberOfDimensions; i++) {
+        // TODO: should this be -.5 or *2-1?
+        movement[i] = m_stepLength*(m_random->nextDouble() - 0.5);
+        particle->adjustPosition(movement[i], i);
+	}
+
+	double wave_after = m_waveFunction->evaluate(m_particles);
+	double ratio = pow(wave_after, 2)/pow(wave_before, 2);
+
+    if (m_random->nextDouble() < ratio) return true;
+
+    for (int i = 0; i < m_numberOfDimensions; i++) particle->adjustPosition(-movement[i], i);
+
     return false;
 }
 

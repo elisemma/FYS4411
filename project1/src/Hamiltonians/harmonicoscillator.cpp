@@ -43,7 +43,7 @@ double HarmonicOscillator::computeLocalEnergy(std::vector<Particle*> particles) 
      * m_system->getWaveFunction()...
      */
 
-    double potentialEnergy = 0, r_squared = 0, double_derivative = 0;
+    double r_squared = 0, double_derivative = 0;
 
     // USE THE SAME AS IN simplegaussian.cpp
     for (Particle* particle : particles) {
@@ -51,8 +51,8 @@ double HarmonicOscillator::computeLocalEnergy(std::vector<Particle*> particles) 
             r_squared += pow(pos_i, 2);
         }
     }
-    // TODO: m_omega eller m_omega * m_omega
-    potentialEnergy += 0.5 * m_omega * r_squared;
+    // TODO: m_omega eller m_omega * m_omega, we do be lovin us some pow action!<3
+    double potentialEnergy = 0.5 * pow(m_omega, 2) * r_squared;
 
 
     // TODO: Check if numeric or analytical

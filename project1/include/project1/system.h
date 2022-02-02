@@ -20,6 +20,7 @@ public:
     class Sampler*                  getSampler()        { return m_sampler; }
     std::vector<class Particle*>    getParticles()      { return m_particles; }
     class Random*                   getRandomEngine()   { return m_random; }
+    double getStepLength()              { return m_stepLength; }  
     int getNumberOfParticles()          { return m_numberOfParticles; }
     int getNumberOfDimensions()         { return m_numberOfDimensions; }
     int getNumberOfMetropolisSteps()    { return m_numberOfMetropolisSteps; }

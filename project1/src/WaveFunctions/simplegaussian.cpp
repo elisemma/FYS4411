@@ -34,5 +34,7 @@ double SimpleGaussian::computeDoubleDerivativeAnalytical(vector<class Particle*>
   //double double_derivative = (exp(-2*alpha*r_vec_sq(2)) - 2*exp(-2*alpha*r_vec_sq(1)) + exp(-2*alpha*r_vec_sq(0)))/pow(m_stepLength,2);
 //}
 double SimpleGaussian::computeDoubleDerivativeNumerical(vector<class Particle*> particles){
+  //TO DO: lage h og r_squared_list
+  //(exp(-2*alpha*r_squared_list(2)) -2*exp(-2*alpha*r_squared_list(1)) + exp(-2*alpha*r_squared_list(0)))/(h*h);
   return 0;
 }

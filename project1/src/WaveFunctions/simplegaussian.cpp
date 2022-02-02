@@ -5,26 +5,34 @@
 #include "project1/system.h"
 #include "project1/particle.h"
 
+using namespace std;
+
 SimpleGaussian::SimpleGaussian(System* system, double alpha_) : WaveFunction(system) {
     assert(alpha_ >= 0);
     this->alpha = alpha_;
 }
 
-double SimpleGaussian::evaluate(std::vector<Particle*> particles) {
+double SimpleGaussian::evaluate(vector<Particle*> particles) {
     double r_squared = m_system->calculate_r_squared(particles);
     return exp(-alpha * r_squared);
 }
 
+double SimpleGaussian::computeDoubleDerivative(vector<class Particle*> particles, bool analytical) {
+    if (analytical) {
+      return computeDoubleDerivativeAnalytical(particles);
+    } else {
+      return computeDoubleDerivativeNumerical(particles);
+    }
+}
 
-double SimpleGaussian::computeDoubleDerivative(std::vector<class Particle*> particles) {
-    /* All wave functions need to implement this function, so you need to
-     * find the double derivative analytically. Note that by double derivative,
-     * we actually mean the sum of the Laplacians with respect to the
-     * coordinates of each particle.
-     *
-     * This quantity is needed to compute the (local) energy (consider the
-     * Schrödinger equation to see how the two are related).
-     */
+double SimpleGaussian::computeDoubleDerivativeAnalytical(vector<class Particle*> particles) {
     double r_squared = m_system->calculate_r_squared(particles);
-    return 0; // the analytical expression goes here
+    return 2*alpha*exp(-alpha*r_squared)*(2*alpha*r_squared - 1);
+}
+
+//double SimpleGaussian::computeDoubleDerivativeNumerical(vector<class Particle*> particles, double[] r_vec_sq){
+  //double double_derivative = (exp(-2*alpha*r_vec_sq(2)) - 2*exp(-2*alpha*r_vec_sq(1)) + exp(-2*alpha*r_vec_sq(0)))/pow(m_stepLength,2);
+//}
+double SimpleGaussian::computeDoubleDerivativeNumerical(vector<class Particle*> particles){
+  return 0;
 }

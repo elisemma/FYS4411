@@ -6,6 +6,7 @@
 #include "Hamiltonians/hamiltonian.h"
 #include "InitialStates/initialstate.h"
 #include "Math/random.h"
+#include <math.h>
 
 
 System::System() {
@@ -54,6 +55,18 @@ bool System::metropolisStep() {
     for (int i = 0; i < m_numberOfDimensions; i++) particle->adjustPosition(-movement[i], i);
 
     return false;
+    // FOKKER_PLANCK:
+    // Vi tror at y er den nye og x er den naavaerende posisjonen
+    //for (int i = 0; i < m_numberOfDimensions; i++) {
+          // TODO: should this be -.5 or *2-1?
+          //movement[i] = m_stepLength*(m_random->nextDouble() - 0.5);
+          //particle->adjustPosition(movement[i], i);
+          //x =
+          //y =
+  	}
+    //double F_x = -4*alpha*r
+    //double delta_t = 0.1;
+    //double G_yx = 1/pow(2*M_PI*delta_t, 3*numberOfParticles/2)*exp(-pow(y-x - 0.5*delta_t*F_x,2)/(2*delta_t));
 }
 
 void System::runMetropolisSteps(int numberOfMetropolisSteps) {
@@ -106,5 +119,3 @@ void System::setWaveFunction(WaveFunction* waveFunction) {
 void System::setInitialState(InitialState* initialState) {
     m_initialState = initialState;
 }
-
-

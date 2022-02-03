@@ -16,7 +16,7 @@ int main() {
     // Seed for the random number generator
     int seed = 42;
 
-    int    numberOfDimensions = 3;
+    int    numberOfDimensions = 1;
     int    numberOfParticles  = 1;
     int    numberOfSteps      = (int) 1e6;
     double omega              = 1.0;          // Oscillator frequency.

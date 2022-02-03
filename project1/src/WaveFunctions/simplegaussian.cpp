@@ -28,9 +28,11 @@ double SimpleGaussian::computeDoubleDerivative(vector<Particle*> particles, bool
 }
 
 double SimpleGaussian::computeDoubleDerivativeAnalytical(vector<Particle*> particles) {
+
+    int numberOfDimensions = particles[0]->getPosition().size();
     double r_squared = m_system->calculate_r_squared(particles);
     // cout << "r2: " << r_squared << endl;
-    return 2*alpha*exp(-alpha*r_squared)*(2*alpha*r_squared - 1);
+    return -2*numberOfDimensions*alpha + 4*pow(alpha,2)*r_squared;
 }
 
 // double SimpleGaussian::computeDoubleDerivativeNumerical(vector<class Particle*> particles){

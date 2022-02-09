@@ -9,4 +9,5 @@ public:
     double computeDoubleDerivative(std::vector<Particle*> particles, bool analytical);
     double computeDoubleDerivativeAnalytical(std::vector<Particle*> particles);
     double computeDoubleDerivativeNumerical(std::vector<Particle*> particles);
+    std::vector<double> computeQuantumForceAnalytical(Particle* particles);
 };

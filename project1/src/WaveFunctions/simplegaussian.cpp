@@ -59,3 +59,11 @@ double SimpleGaussian::computeDoubleDerivativeNumerical(vector<Particle*> partic
 
     return double_derivative;
 }
+
+vector<double> SimpleGaussian::computeQuantumForceAnalytical(Particle* particle) {
+    vector<double> force;
+    for (auto dimension_pos : particle->getPosition()) {
+        force.push_back(-4*alpha*dimension_pos);
+    }
+    return force;
+}

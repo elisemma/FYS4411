@@ -28,7 +28,7 @@ double System::calculate_r_squared(std::vector<Particle*> particles) {
     return r_squared;
 }
 
-bool System::metropolisStep() {
+bool System::metropolisStep(bool importance) {
     /* Perform the actual Metropolis step: Choose a particle at random and
      * change it's position by a random amount, and check if the step is
      * accepted by the Metropolis test (compare the wave function evaluated
@@ -38,6 +38,12 @@ bool System::metropolisStep() {
     Particle *particle = m_particles[m_random->nextInt(m_numberOfParticles - 1)];
 
     double movement[m_numberOfDimensions], wave_before = m_waveFunction->evaluate(m_particles);
+    std::vector<double> quantum_before;
+
+    // TODO: Check that importance step is supposed to only do one particle at a time
+    // TODO: We want some monte carlo action <3??
+    // TODO: Check that the quantum_before is actually updated here!
+    if (importance) quantum_before = m_waveFunction->computeQuantumForceAnalytical(particle); // TODO: GET THE QUANTUM FORCE!
 
 	for (int i = 0; i < m_numberOfDimensions; i++) {
         // TODO: should this be -.5 or *2-1?
@@ -46,8 +52,15 @@ bool System::metropolisStep() {
 	}
 
 	double wave_after = m_waveFunction->evaluate(m_particles);
-    // TODO: Do we need them pows?
-	double ratio = pow(wave_after, 2)/pow(wave_before, 2);
+
+    double ratio = wave_after*wave_after/wave_before*wave_before;
+
+    if (importance) {
+        std::vector<double> quantum_after = m_waveFunction->computeQuantumForceAnalytical(particle);
+        // TODO: get the quantum force after the move
+        // do some green shroom ratio or smtn
+
+    }
 
     // should we check if ratio is more than 1?
     if (m_random->nextDouble() < ratio) return true;
@@ -68,6 +81,7 @@ bool System::metropolisStep() {
     //double delta_t = 0.1;
     //double G_yx = 1/pow(2*M_PI*delta_t, 3*numberOfParticles/2)*exp(-pow(y-x - 0.5*delta_t*F_x,2)/(2*delta_t));
 
+
 double System::runMetropolisSteps(int numberOfMetropolisSteps) {
     m_particles                 = m_initialState->getParticles();
     m_sampler                   = new Sampler(this);
@@ -75,7 +89,8 @@ double System::runMetropolisSteps(int numberOfMetropolisSteps) {
     m_sampler->setNumberOfMetropolisSteps(numberOfMetropolisSteps);
 
     for (int i=0; i < numberOfMetropolisSteps; i++) {
-        bool acceptedStep = metropolisStep();
+        // TODO: Check if metropolis step is used..
+        bool acceptedStep = metropolisStep(true);
 
         /* Here you should sample the energy (and maybe other things using
          * the m_sampler instance of the Sampler class. Make sure, though,

@@ -6,7 +6,7 @@ class System {
 public:
     System();
     System(int seed);
-    bool metropolisStep             ();
+    bool metropolisStep             (bool importance);
     double runMetropolisSteps       (int numberOfMetropolisSteps);
     void setNumberOfParticles       (int numberOfParticles);
     void setNumberOfDimensions      (int numberOfDimensions);

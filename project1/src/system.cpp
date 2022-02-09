@@ -45,13 +45,13 @@ bool System::metropolisStep(bool importance) {
     // TODO: Check that the quantum_before is actually updated here!
     if (importance) quantum_before = m_waveFunction->computeQuantumForceAnalytical(particle); // TODO: GET THE QUANTUM FORCE!
 
-	for (int i = 0; i < m_numberOfDimensions; i++) {
+    for (int i = 0; i < m_numberOfDimensions; i++) {
         // TODO: should this be -.5 or *2-1?
         movement[i] = m_stepLength*(m_random->nextDouble() - 0.5);
         particle->adjustPosition(movement[i], i);
-	}
+    }
 
-	double wave_after = m_waveFunction->evaluate(m_particles);
+    double wave_after = m_waveFunction->evaluate(m_particles);
 
     double ratio = wave_after*wave_after/wave_before*wave_before;
 
@@ -59,6 +59,13 @@ bool System::metropolisStep(bool importance) {
         std::vector<double> quantum_after = m_waveFunction->computeQuantumForceAnalytical(particle);
         // TODO: get the quantum force after the move
         // do some green shroom ratio or smtn
+        double delta_t = 0.1;
+        double D = 0.5;
+        double F_after = m_waveFunction->computeQuantumForceAnalytical(particle);
+        //TODO: N = numberOfParticles???
+        int N = 1;
+        //TODO: Check minus signs!!!
+        G = 1/pow(4*M_PI*D*delta_t, 3*N/2)*exp(pow(movement + D*delta_t*F_after,2)/(4*D*delta_t));
 
     }
 
@@ -68,19 +75,9 @@ bool System::metropolisStep(bool importance) {
     for (int i = 0; i < m_numberOfDimensions; i++) particle->adjustPosition(-movement[i], i);
 
     return false;
-    // FOKKER_PLANCK:
-    // Vi tror at y er den nye og x er den naavaerende posisjonen
-    //for (int i = 0; i < m_numberOfDimensions; i++) {
-          // TODO: should this be -.5 or *2-1?
-          //movement[i] = m_stepLength*(m_random->nextDouble() - 0.5);
-          //particle->adjustPosition(movement[i], i);
-          //x =
-          //y =
-}
-    //double F_x = -4*alpha*r
-    //double delta_t = 0.1;
-    //double G_yx = 1/pow(2*M_PI*delta_t, 3*numberOfParticles/2)*exp(-pow(y-x - 0.5*delta_t*F_x,2)/(2*delta_t));
 
+
+}
 
 double System::runMetropolisSteps(int numberOfMetropolisSteps) {
     m_particles                 = m_initialState->getParticles();

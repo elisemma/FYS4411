@@ -29,15 +29,12 @@ double SimpleGaussian::computeDoubleDerivative(vector<Particle*> particles, bool
 
 double SimpleGaussian::computeDoubleDerivativeAnalytical(vector<Particle*> particles) {
 
-    int numberOfDimensions = particles[0]->getPosition().size();
+    int numberOfDimensions = m_system->getNumberOfDimensions();
+    int numberOfParticles = m_system->getNumberOfParticles();
     double r_squared = m_system->calculate_r_squared(particles);
-    // cout << "r2: " << r_squared << endl;
-    return -2*numberOfDimensions*alpha + 4*pow(alpha,2)*r_squared;
+    
+    return -2*numberOfParticles*numberOfDimensions*alpha + 4*pow(alpha,2)*r_squared;
 }
-
-// double SimpleGaussian::computeDoubleDerivativeNumerical(vector<class Particle*> particles){
-//   return 0;
-// }
 
 void move_particles(vector<Particle*> particles, double step_length, int dim) {
     for (auto particle : particles) {
@@ -49,19 +46,13 @@ double SimpleGaussian::computeDoubleDerivativeNumerical(vector<Particle*> partic
     double double_derivative = 0, step_length = m_system->getStepLength();
 
     for (int dim = 0; dim < m_system->getNumberOfDimensions(); dim++) {
-        // TODO: This is the same each time, so maybe move outside of the loop if working?
-        double_derivative -= 2*m_system->getWaveFunction()->evaluate(particles);
-
         move_particles(particles, -step_length, dim);
-
         double_derivative += m_system->getWaveFunction()->evaluate(particles);
-
         move_particles(particles, 2*step_length, dim);
-
         double_derivative += m_system->getWaveFunction()->evaluate(particles);
-
         move_particles(particles, -step_length, dim);
     }
+    double_derivative -= 2*m_system->getNumberOfDimensions()*m_system->getWaveFunction()->evaluate(particles);
 
     double evaluated_wave = m_system->getWaveFunction()->evaluate(particles);
     double_derivative /= (step_length * step_length * evaluated_wave);

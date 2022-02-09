@@ -45,8 +45,8 @@ double HarmonicOscillator::computeLocalEnergy(std::vector<Particle*> particles) 
 
     // TODO: Check if numeric or analytical
     // TODO: the comments say something about analytical or numerical, here we only use analytical
-    double_derivative = m_system->getWaveFunction()->computeDoubleDerivative(particles, true);
-    //double_derivative = m_system->getWaveFunction()->computeDoubleDerivative(particles, false);
+    // double_derivative = m_system->getWaveFunction()->computeDoubleDerivative(particles, true);
+    double_derivative = m_system->getWaveFunction()->computeDoubleDerivative(particles, false);
 
     //TO DO: Check natural units for m and h_bar
     double kineticEnergy = -0.5 * double_derivative;

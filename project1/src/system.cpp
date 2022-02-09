@@ -63,13 +63,12 @@ bool System::metropolisStep() {
           //particle->adjustPosition(movement[i], i);
           //x =
           //y =
-  	}
+}
     //double F_x = -4*alpha*r
     //double delta_t = 0.1;
     //double G_yx = 1/pow(2*M_PI*delta_t, 3*numberOfParticles/2)*exp(-pow(y-x - 0.5*delta_t*F_x,2)/(2*delta_t));
-}
 
-void System::runMetropolisSteps(int numberOfMetropolisSteps) {
+double System::runMetropolisSteps(int numberOfMetropolisSteps) {
     m_particles                 = m_initialState->getParticles();
     m_sampler                   = new Sampler(this);
     m_numberOfMetropolisSteps   = numberOfMetropolisSteps;
@@ -88,6 +87,8 @@ void System::runMetropolisSteps(int numberOfMetropolisSteps) {
     }
     m_sampler->computeAverages();
     m_sampler->printOutputToTerminal();
+
+    return m_sampler->getEnergy();
 }
 
 void System::setNumberOfParticles(int numberOfParticles) {

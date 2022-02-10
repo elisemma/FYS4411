@@ -3,15 +3,20 @@
 # ifndef VERBOSE
 # .SILENT:
 # endif
-
-CXX ?= g++
+CXX = g++-11
+#ifeq ($(shell uname), Linux)
+# CXX = g++
+#endif
+#ifneq ($(shell uname), Linux)
+# CXX = g++-11
+#endif
 
 # path #
 SRC_PATH = src
 BUILD_PATH = build
 BIN_PATH = $(BUILD_PATH)/bin
 
-# executable # 
+# executable #
 BIN_NAME = runner
 
 # extensions #

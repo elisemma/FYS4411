@@ -59,13 +59,14 @@ bool System::metropolisStep(bool importance) {
         std::vector<double> quantum_after = m_waveFunction->computeQuantumForceAnalytical(particle);
         // TODO: get the quantum force after the move
         // do some green shroom ratio or smtn
-        double delta_t = 0.1;
-        double D = 0.5;
-        double F_after = m_waveFunction->computeQuantumForceAnalytical(particle);
-        //TODO: N = numberOfParticles???
-        int N = 1;
-        //TODO: Check minus signs!!!
-        G = 1/pow(4*M_PI*D*delta_t, 3*N/2)*exp(pow(movement + D*delta_t*F_after,2)/(4*D*delta_t));
+
+        // double delta_t = 0.1;
+        // double D = 0.5;
+        // double F_after = m_waveFunction->computeQuantumForceAnalytical(particle);
+        // //TODO: N = numberOfParticles???
+        // int N = 1;
+        // //TODO: Check minus signs!!!
+        // G = 1/pow(4*M_PI*D*delta_t, 3*N/2)*exp(pow(movement + D*delta_t*F_after,2)/(4*D*delta_t));
 
     }
 

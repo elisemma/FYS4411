@@ -40,35 +40,43 @@ int main() {
     vector<double> alphaVec{0.5};
 
 
+    vector<vector<size_t>> config_values;
 
-    // make vector with alpha values
-
-    double energyValues[alphaVec.size()][numberOfDimensionsVec.size()][numberOfParticlesVec.size()];
-
-    // TODO: Loop over dimensions from 1..3
-    #pragma omp parallel for schedule(dynamic)
-    for (int a = 0; a < alphaVec.size(); a++) {
-        for (int d = 0; d < numberOfDimensionsVec.size(); d++) {
-            for (int n = 0; n < numberOfParticlesVec.size(); n++) {
-                System* system = new System(seed);
-                system->setHamiltonian              (new HarmonicOscillator(system, omega));
-                system->setWaveFunction             (new SimpleGaussian(system, alphaVec[a]));
-                // system->setInitialState             (new RandomUniform(system, numberOfDimensions, numberOfParticles));
-                system->setInitialState             (new RandomUniform(system, numberOfDimensionsVec[d], numberOfParticlesVec[n]));
-                system->setEquilibrationFraction    (equilibration);
-                system->setStepLength               (stepLength);
-                double energy = system->runMetropolisSteps          (numberOfSteps);
-                // cout << alphaVec[a] << " " << numberOfParticlesVec[n] << " " << energy << endl;
-                energyValues[a][d][n] = energy;
+    for (size_t a = 0; a < alphaVec.size(); a++) {
+        for (size_t d = 0; d < numberOfDimensionsVec.size(); d++) {
+            for (size_t n = 0; n < numberOfParticlesVec.size(); n++) {
+                vector<size_t> config = {a, d, n};
+                config_values.push_back(config);
             }
         }
     }
 
+    double energyValues[alphaVec.size()][numberOfDimensionsVec.size()][numberOfParticlesVec.size()];
+    //
+    // // TODO: Loop over dimensions from 1..3
+    #pragma omp parallel for schedule(dynamic)
+    for (auto config : config_values) {
+        int a = config[0];
+        int d = config[1];
+        int n = config[2];
+
+        System* system = new System(seed);
+        system->setHamiltonian              (new HarmonicOscillator(system, omega));
+        system->setWaveFunction             (new SimpleGaussian(system, alphaVec[a]));
+        // system->setInitialState             (new RandomUniform(system, numberOfDimensions, numberOfParticles));
+        system->setInitialState             (new RandomUniform(system, numberOfDimensionsVec[d], numberOfParticlesVec[n]));
+        system->setEquilibrationFraction    (equilibration);
+        system->setStepLength               (stepLength);
+        double energy = system->runMetropolisSteps          (numberOfSteps);
+        // cout << alphaVec[a] << " " << numberOfParticlesVec[n] << " " << energy << endl;
+        energyValues[a][d][n] = energy;
+    }
+
     ofstream energyFile("output/data/energy_values.tsv");
     energyFile << "alpha\tnumberOfDimensions\tnumberOfParticles\tenergy" << endl;
-    for (auto a = 0; a < alphaVec.size(); a++) {
-        for (auto d = 0; d < numberOfDimensionsVec.size(); d++) {
-            for (auto n = 0; n < numberOfParticlesVec.size(); n++) {
+    for (size_t a = 0; a < alphaVec.size(); a++) {
+        for (size_t d = 0; d < numberOfDimensionsVec.size(); d++) {
+            for (size_t n = 0; n < numberOfParticlesVec.size(); n++) {
                 energyFile << alphaVec[a] << "\t" << numberOfDimensionsVec[d] << "\t" << numberOfParticlesVec[n] << "\t" << energyValues[a][d][n] << endl;
             }
         }

@@ -101,7 +101,8 @@ double System::runMetropolisSteps(int numberOfMetropolisSteps) {
 
     for (int i=0; i < numberOfMetropolisSteps; i++) {
         // TODO: Check if metropolis step is used..
-        bool acceptedStep = metropolisStep(false);
+        // bool acceptedStep = metropolisStep(false);
+        bool acceptedStep = metropolisStep(true);
 
         /* Here you should sample the energy (and maybe other things using
          * the m_sampler instance of the Sampler class. Make sure, though,

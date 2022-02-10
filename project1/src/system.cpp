@@ -7,7 +7,8 @@
 #include "InitialStates/initialstate.h"
 #include "Math/random.h"
 #include <math.h>
-
+#include <iostream>
+using namespace std;
 
 System::System() {
     m_random = new Random();
@@ -55,23 +56,30 @@ bool System::metropolisStep(bool importance) {
 
     double ratio = wave_after*wave_after/wave_before*wave_before;
 
-    // TODO: Check the the implementation is efficient
+    // TO: Check the the implementation is efficient
     if (importance) {
-        //std::vector<double> quantum_after = m_waveFunction->computeQuantumForceAnalytical(particle);
-        //// TODO: get the quantum force after the move
-        //// do some green shroom ratio or smtn
+        std::vector<double> quantum_after = m_waveFunction->computeQuantumForceAnalytical(particle);
+        // TODO: get the quantum force after the move
+        // do some green shroom ratio or smtn
 
-        //double delta_t = 0.01;
-        //double D = 0.5;
-        //// double F_after = m_waveFunction->computeQuantumForceAnalytical(particle);
-        ////TODO: N = numberOfParticles???
-        //double N = 1;
-        //for (int j = 0; j < m_numberOfDimensions; j++){
+        double delta_t = 0.01;
+        double D = 0.5;
+        // double F_after = m_waveFunction->computeQuantumForceAnalytical(particle);
+        //TODO: N = numberOfParticles???
+        double N = getNumberOfParticles();
+        double d = getNumberOfDimensions();
+        double G_yx = 0, G_xy = 0;
 
-        //  double G_yx = 1/pow(4*M_PI*D*delta_t, 3*N/2)*exp(-pow(movement[j] + D*delta_t*quantum_before[j],2)/(4*D*delta_t));
-        //  double G_xy = 1/pow(4*M_PI*D*delta_t, 3*N/2)*exp(-pow(-movement[j] + D*delta_t*quantum_after[j],2)/(4*D*delta_t));
-        //}
+        for (int j = 0; j < m_numberOfDimensions; j++){
 
+          G_yx += pow(1/pow(4*M_PI*D*delta_t, d*N/2)*exp(-pow(movement[j] + D*delta_t*quantum_before[j],2)/(4*D*delta_t)),2);
+          G_xy += pow(1/pow(4*M_PI*D*delta_t, d*N/2)*exp(-pow(-movement[j] + D*delta_t*quantum_after[j],2)/(4*D*delta_t)),2);
+
+        }
+
+        //double q = sqrt(G_yx/G_xy)*ratio;
+        //cout << q << endl;
+        ratio *= sqrt(G_yx/G_xy);
 
     }
 
@@ -93,7 +101,7 @@ double System::runMetropolisSteps(int numberOfMetropolisSteps) {
 
     for (int i=0; i < numberOfMetropolisSteps; i++) {
         // TODO: Check if metropolis step is used..
-        bool acceptedStep = metropolisStep(true);
+        bool acceptedStep = metropolisStep(false);
 
         /* Here you should sample the energy (and maybe other things using
          * the m_sampler instance of the Sampler class. Make sure, though,

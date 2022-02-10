@@ -30,13 +30,16 @@ int main() {
     // for equilibration.
 
     // int numberOfParticlesArray[] = {1, 10, 100, 500};
-    vector<int> numberOfDimensionsVec{1};
+    vector<int> numberOfDimensionsVec{1, 2, 3};
     vector<int> numberOfParticlesVec{1, 4, 6};
     // int numberOfParticlesArray[] = {100};
 
     // TODO: make this in a nicer way?
     // double alpha_values[] = {0.01, 0.06, 0.11, 0.16, 0.21, 0.26, 0.31, 0.36, 0.41, 0.46, 0.51, 0.56, 0.61, 0.66, 0.71, 0.76, 0.81, 0.86, 0.91, 0.96};
-    vector<double> alphaVec{0.01, 0.21, 0.41, 0.61, 0.81, 0.96};
+    //vector<double> alphaVec{0.01, 0.21, 0.41, 0.61, 0.81, 0.96};
+    vector<double> alphaVec{0.5};
+
+
 
     // make vector with alpha values
 

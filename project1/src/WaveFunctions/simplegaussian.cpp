@@ -32,7 +32,7 @@ double SimpleGaussian::computeDoubleDerivativeAnalytical(vector<Particle*> parti
     int numberOfDimensions = m_system->getNumberOfDimensions();
     int numberOfParticles = m_system->getNumberOfParticles();
     double r_squared = m_system->calculate_r_squared(particles);
-    
+
     return -2*numberOfParticles*numberOfDimensions*alpha + 4*pow(alpha,2)*r_squared;
 }
 
@@ -43,7 +43,9 @@ void move_particles(vector<Particle*> particles, double step_length, int dim) {
 }
 
 double SimpleGaussian::computeDoubleDerivativeNumerical(vector<Particle*> particles) {
-    double double_derivative = 0, step_length = m_system->getStepLength();
+  //TODO: Ta med step length i rapport, og numerisk feil (mindre og tregere enn analytisk)
+  //TODO: Test for ulike step length og undersøk CPU tid
+    double double_derivative = 0, step_length = 1e-6;
 
     for (int dim = 0; dim < m_system->getNumberOfDimensions(); dim++) {
         move_particles(particles, -step_length, dim);

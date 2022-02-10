@@ -3,13 +3,13 @@
 # ifndef VERBOSE
 # .SILENT:
 # endif
-CXX = g++-11
-#ifeq ($(shell uname), Linux)
-# CXX = g++
-#endif
-#ifneq ($(shell uname), Linux)
 # CXX = g++-11
-#endif
+ifeq ($(shell uname), Linux)
+	CXX = g++
+endif
+ifneq ($(shell uname), Linux)
+	CXX = g++-11
+endif
 
 # path #
 SRC_PATH = src

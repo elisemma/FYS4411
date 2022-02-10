@@ -1,5 +1,4 @@
 #include <iostream>
-#include <omp.h>
 #include <vector>
 #include "project1/system.h"
 #include "project1/particle.h"

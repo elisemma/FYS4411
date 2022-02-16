@@ -9,7 +9,9 @@ public:
     // std::vector<double> getParameters() { return m_parameters; }
     double getAlpha() { return alpha; }
     virtual double evaluate(std::vector<class Particle*> particles) = 0;
-    virtual double computeDoubleDerivative(std::vector<class Particle*> particles, bool analytical) = 0;
+    // virtual double computeDoubleDerivative(std::vector<class Particle*> particles, bool analytical) = 0;
+    virtual double computeDoubleDerivativeAnalytical(std::vector<class Particle*> particles) = 0;
+    virtual double computeDoubleDerivativeNumerical(std::vector<class Particle*> particles) = 0;
     virtual std::vector<double> computeQuantumForceAnalytical(Particle* particles) = 0;
 protected:
     // int     m_numberOfParameters = 0;

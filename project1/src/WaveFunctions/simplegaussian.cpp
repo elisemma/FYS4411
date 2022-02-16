@@ -19,13 +19,13 @@ double SimpleGaussian::evaluate(vector<Particle*> particles) {
     return exp(-alpha * r_squared);
 }
 
-double SimpleGaussian::computeDoubleDerivative(vector<Particle*> particles, bool analytical) {
-    if (analytical) {
-      return computeDoubleDerivativeAnalytical(particles);
-    } else {
-      return computeDoubleDerivativeNumerical(particles);
-    }
-}
+// double SimpleGaussian::computeDoubleDerivative(vector<Particle*> particles, bool analytical) {
+//     if (analytical) {
+//       return computeDoubleDerivativeAnalytical(particles);
+//     } else {
+//       return computeDoubleDerivativeNumerical(particles);
+//     }
+// }
 
 double SimpleGaussian::computeDoubleDerivativeAnalytical(vector<Particle*> particles) {
 

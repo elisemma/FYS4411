@@ -17,9 +17,10 @@ using namespace std;
 struct Parameters {
     double alpha, delta_t, energy;
     int numberOfDimensions, numberOfParticles;
+    bool importanceSampling;
 
-    Parameters(double alpha, int numberOfDimensions, int numberOfParticles, double delta_t) :
-        alpha(alpha), delta_t(delta_t), numberOfDimensions(numberOfDimensions), numberOfParticles(numberOfParticles) {} 
+    Parameters(double alpha, int numberOfDimensions, int numberOfParticles, double delta_t, bool importanceSampling) :
+        alpha(alpha), delta_t(delta_t), numberOfDimensions(numberOfDimensions), numberOfParticles(numberOfParticles), importanceSampling(importanceSampling) {} 
 };
 
 int main() {
@@ -49,37 +50,38 @@ int main() {
     //vector<double> alphaVec{0.01, 0.21, 0.41, 0.61, 0.81, 0.96};
     vector<double> alphaVec{0.5};
 
+    vector<bool> importanceSamplingVec{true, false};
 
-    // vector<vector<double>> config_values;
     vector<Parameters> parametersVec;
 
     for (double alpha : alphaVec)
         for (int numberOfDimensions : numberOfDimensionsVec)
             for (int numberOfParticles : numberOfParticlesVec)
                 for (double delta_t : delta_tVec)
-                    parametersVec.push_back(Parameters(alpha, numberOfDimensions, numberOfParticles, delta_t));
+                    for (bool importanceSampling : importanceSamplingVec)
+                        parametersVec.push_back(Parameters(alpha, numberOfDimensions, numberOfParticles, delta_t, importanceSampling));
 
-    // // TODO: Loop over dimensions from 1..3
     #pragma omp parallel for schedule(dynamic)
     for (auto &parameters : parametersVec) {
-        // TODO: Should we maybe just initialize the entire system inside of system instead of outside?
-        // TODO: We need parameter for importance step
-        System* system = new System(seed);
-        system->setHamiltonian                     (new HarmonicOscillator(system, omega));
-        system->setWaveFunction                    (new SimpleGaussian(system, parameters.alpha));
-        system->setInitialState                    (new RandomUniform(system, parameters.numberOfDimensions, parameters.numberOfParticles));
-        system->setEquilibrationFraction           (equilibration);
-        system->setStepLength                      (stepLength);
+        System* system = new System(
+                omega, 
+                parameters.alpha, 
+                parameters.numberOfDimensions, 
+                parameters.numberOfParticles, 
+                equilibration, 
+                stepLength, 
+                seed
+            );
 
-        double energy = system->runMetropolisSteps (numberOfSteps, parameters.delta_t);
+        double energy = system->runMetropolisSteps (numberOfSteps, parameters.delta_t, parameters.importanceSampling);
 
         parameters.energy = energy;
     }
 
     ofstream energyFile("output/data/energy_values.tsv");
-    energyFile << "alpha\tnumberOfDimensions\tnumberOfParticles\tdt\tenergy" << endl;
+    energyFile << "alpha\tnumberOfDimensions\tnumberOfParticles\tdt\timportanceSampling\tenergy" << endl;
     for (auto parameters : parametersVec)
-        energyFile << parameters.alpha << "\t" << parameters.numberOfDimensions << "\t" << parameters.numberOfParticles << "\t" << parameters.delta_t << "\t" << parameters.energy << endl;
+        energyFile << parameters.alpha << "\t" << parameters.numberOfDimensions << "\t" << parameters.numberOfParticles << "\t" << parameters.delta_t << "\t" << parameters.importanceSampling << "\t" << parameters.energy << endl;
     energyFile.close();
 
     return 0;

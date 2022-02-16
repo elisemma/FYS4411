@@ -8,15 +8,40 @@
 #include "Math/random.h"
 #include <math.h>
 #include <iostream>
+
+
+#include "Hamiltonians/harmonicoscillator.h"
+#include "WaveFunctions/simplegaussian.h"
+#include "InitialStates/randomuniform.h"
+
 using namespace std;
 
-System::System() {
+// TODO: Include seed
+System::System(double omega, double alpha, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength) {
     m_random = new Random();
+    initialize_system(omega, alpha, numberOfDimensions, numberOfParticles, equilibration, stepLength);
 }
 
-System::System(int seed) {
+System::System(double omega, double alpha, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength, int seed) {
     m_random = new Random(seed);
+    initialize_system(omega, alpha, numberOfDimensions, numberOfParticles, equilibration, stepLength);
 }
+
+void System::initialize_system(double omega, double alpha, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength) {
+    setHamiltonian                     (new HarmonicOscillator(this, omega));
+    setWaveFunction                    (new SimpleGaussian(this, alpha));
+    setInitialState                    (new RandomUniform(this, numberOfDimensions, numberOfParticles));
+    setEquilibrationFraction           (equilibration);
+    setStepLength                      (stepLength);
+
+}
+// System::System() {
+//     m_random = new Random();
+// }
+//
+// System::System(int seed) {
+//     m_random = new Random(seed);
+// }
 
 // TODO: Should this value be saved/cached?
 double System::calculate_r_squared(std::vector<Particle*> particles) {
@@ -93,7 +118,7 @@ bool System::metropolisStep(bool importance, double delta_t) {
 
 }
 
-double System::runMetropolisSteps(int numberOfMetropolisSteps, double delta_t) {
+double System::runMetropolisSteps(int numberOfMetropolisSteps, double delta_t, bool importanceSampling) {
     m_particles                 = m_initialState->getParticles();
     m_sampler                   = new Sampler(this);
     m_numberOfMetropolisSteps   = numberOfMetropolisSteps;
@@ -102,7 +127,9 @@ double System::runMetropolisSteps(int numberOfMetropolisSteps, double delta_t) {
     for (int i=0; i < numberOfMetropolisSteps; i++) {
         // TODO: Check if metropolis step is used..
         // bool acceptedStep = metropolisStep(false);
-        bool acceptedStep = metropolisStep(true, delta_t);
+
+        // bool acceptedStep = metropolisStep(true, delta_t);
+        bool acceptedStep = metropolisStep(importanceSampling, delta_t);
 
         /* Here you should sample the energy (and maybe other things using
          * the m_sampler instance of the Sampler class. Make sure, though,

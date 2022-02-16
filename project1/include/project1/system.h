@@ -4,10 +4,13 @@
 
 class System {
 public:
-    System();
-    System(int seed);
+    System(double omega, double alpha, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength);
+    System(double omega, double alpha, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength, int seed);
+
+    // System();
+    // System(int seed);
     bool metropolisStep             (bool importance, double delta_t);
-    double runMetropolisSteps       (int numberOfMetropolisSteps, double delta_t);
+    double runMetropolisSteps       (int numberOfMetropolisSteps, double delta_t, bool importanceSampling);
     void setNumberOfParticles       (int numberOfParticles);
     void setNumberOfDimensions      (int numberOfDimensions);
     void setStepLength              (double stepLength);
@@ -29,6 +32,7 @@ public:
     double calculate_r_squared(std::vector<Particle*> particles);
 
 private:
+    void initialize_system(double omega, double alpha, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength);
     int                             m_numberOfParticles = 0;
     int                             m_numberOfDimensions = 0;
     int                             m_numberOfMetropolisSteps = 0;

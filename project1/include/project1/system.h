@@ -6,8 +6,8 @@ class System {
 public:
     System();
     System(int seed);
-    bool metropolisStep             (bool importance);
-    double runMetropolisSteps       (int numberOfMetropolisSteps);
+    bool metropolisStep             (bool importance, double delta_t);
+    double runMetropolisSteps       (int numberOfMetropolisSteps, double delta_t);
     void setNumberOfParticles       (int numberOfParticles);
     void setNumberOfDimensions      (int numberOfDimensions);
     void setStepLength              (double stepLength);
@@ -21,7 +21,7 @@ public:
     std::vector<class Particle*>    getParticles()      { return m_particles; }
     class Random*                   getRandomEngine()   { return m_random; }
     double getEnergy                ();
-    double getStepLength()              { return m_stepLength; }  
+    double getStepLength()              { return m_stepLength; }
     int getNumberOfParticles()          { return m_numberOfParticles; }
     int getNumberOfDimensions()         { return m_numberOfDimensions; }
     int getNumberOfMetropolisSteps()    { return m_numberOfMetropolisSteps; }
@@ -41,4 +41,3 @@ private:
     std::vector<class Particle*>    m_particles = std::vector<class Particle*>();
     class Random*                   m_random = nullptr;
 };
-

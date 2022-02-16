@@ -29,7 +29,7 @@ double System::calculate_r_squared(std::vector<Particle*> particles) {
     return r_squared;
 }
 
-bool System::metropolisStep(bool importance) {
+bool System::metropolisStep(bool importance, double delta_t) {
     /* Perform the actual Metropolis step: Choose a particle at random and
      * change it's position by a random amount, and check if the step is
      * accepted by the Metropolis test (compare the wave function evaluated
@@ -62,7 +62,7 @@ bool System::metropolisStep(bool importance) {
         // TODO: get the quantum force after the move
         // do some green shroom ratio or smtn
 
-        double delta_t = 0.01;
+        //double delta_t = 0.01;
         double D = 0.5;
         // double F_after = m_waveFunction->computeQuantumForceAnalytical(particle);
         //TODO: N = numberOfParticles???
@@ -72,8 +72,8 @@ bool System::metropolisStep(bool importance) {
 
         for (int j = 0; j < m_numberOfDimensions; j++){
 
-          G_yx += pow(1/pow(4*M_PI*D*delta_t, d*N/2)*exp(-pow(movement[j] + D*delta_t*quantum_before[j],2)/(4*D*delta_t)),2);
-          G_xy += pow(1/pow(4*M_PI*D*delta_t, d*N/2)*exp(-pow(-movement[j] + D*delta_t*quantum_after[j],2)/(4*D*delta_t)),2);
+          G_yx += pow(1/pow(4*M_PI*D*delta_t, d*N/2)*exp(-pow(movement[j] - D*delta_t*quantum_before[j],2)/(4*D*delta_t)),2);
+          G_xy += pow(1/pow(4*M_PI*D*delta_t, d*N/2)*exp(-pow(-movement[j] - D*delta_t*quantum_after[j],2)/(4*D*delta_t)),2);
 
         }
 
@@ -93,7 +93,7 @@ bool System::metropolisStep(bool importance) {
 
 }
 
-double System::runMetropolisSteps(int numberOfMetropolisSteps) {
+double System::runMetropolisSteps(int numberOfMetropolisSteps, double delta_t) {
     m_particles                 = m_initialState->getParticles();
     m_sampler                   = new Sampler(this);
     m_numberOfMetropolisSteps   = numberOfMetropolisSteps;
@@ -102,7 +102,7 @@ double System::runMetropolisSteps(int numberOfMetropolisSteps) {
     for (int i=0; i < numberOfMetropolisSteps; i++) {
         // TODO: Check if metropolis step is used..
         // bool acceptedStep = metropolisStep(false);
-        bool acceptedStep = metropolisStep(true);
+        bool acceptedStep = metropolisStep(true, delta_t);
 
         /* Here you should sample the energy (and maybe other things using
          * the m_sampler instance of the Sampler class. Make sure, though,

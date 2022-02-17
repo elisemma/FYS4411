@@ -83,5 +83,5 @@ void Sampler::computeAverages() {
 
     // Final
     // TODO: We need eta
-    m_alphaDerivativeChange = 0.01 * 2 * (m_expectedTrailEnergyDerivative - m_expectedTrailDerivative * m_energy);
+    m_alphaDerivativeChange = 2 * (m_expectedTrailEnergyDerivative - m_expectedTrailDerivative * m_energy);
 }

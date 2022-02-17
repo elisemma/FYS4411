@@ -20,8 +20,33 @@ struct Parameters {
     bool importanceSampling;
 
     Parameters(double alpha, int numberOfDimensions, int numberOfParticles, double delta_t, bool importanceSampling) :
-        alpha(alpha), delta_t(delta_t), numberOfDimensions(numberOfDimensions), numberOfParticles(numberOfParticles), importanceSampling(importanceSampling) {} 
+        alpha(alpha), delta_t(delta_t), numberOfDimensions(numberOfDimensions), numberOfParticles(numberOfParticles), importanceSampling(importanceSampling) {}
 };
+
+void gradient_alpha_search(Parameters parameters, int seed){
+  //for (auto &parameters : parametersVec) {
+  double omega              = 1.0;          // Oscillator frequency.
+  double stepLength         = 0.1;
+  double equilibration      = 0.1;          // Amount of the total steps used
+  int    numberOfSteps      = (int) 1e6;
+
+
+      System* system = new System(
+              omega,
+              parameters.alpha,
+              parameters.numberOfDimensions,
+              parameters.numberOfParticles,
+              equilibration,
+              stepLength,
+              seed
+          );
+
+  double energy = system->runMetropolisSteps(numberOfSteps, parameters.delta_t, parameters.importanceSampling);
+
+//TODO: Verify if h=0.001 is ok as step
+  double alpha_new = parameters.alpha - 0.001*system->getAlphaDerivativeChange();
+  cout << "alpha_new" << alpha_new << endl;
+}
 
 int main() {
     // Seed for the random number generator
@@ -62,17 +87,20 @@ int main() {
                         parametersVec.push_back(Parameters(alpha, numberOfDimensions, numberOfParticles, delta_t, importanceSampling));
 
     cout << "NOTE: The parameters were hijacked by a simple single config:))" << endl;
-    parametersVec = {Parameters(0.51, 3, 3, 0.1, true)};
+    parametersVec = {Parameters(0.5, 3, 3, 0.1, true)};
+
+    gradient_alpha_search(parametersVec[0], seed);
+    exit(69);
 
     #pragma omp parallel for schedule(dynamic)
     for (auto &parameters : parametersVec) {
         System* system = new System(
-                omega, 
-                parameters.alpha, 
-                parameters.numberOfDimensions, 
-                parameters.numberOfParticles, 
-                equilibration, 
-                stepLength, 
+                omega,
+                parameters.alpha,
+                parameters.numberOfDimensions,
+                parameters.numberOfParticles,
+                equilibration,
+                stepLength,
                 seed
             );
 

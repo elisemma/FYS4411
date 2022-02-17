@@ -61,6 +61,9 @@ int main() {
                     for (bool importanceSampling : importanceSamplingVec)
                         parametersVec.push_back(Parameters(alpha, numberOfDimensions, numberOfParticles, delta_t, importanceSampling));
 
+    cout << "NOTE: The parameters were hijacked by a simple single config:))" << endl;
+    parametersVec = {Parameters(0.5, 1, 1, 0.1, true)};
+
     #pragma omp parallel for schedule(dynamic)
     for (auto &parameters : parametersVec) {
         System* system = new System(
@@ -73,7 +76,7 @@ int main() {
                 seed
             );
 
-        double energy = system->runMetropolisSteps (numberOfSteps, parameters.delta_t, parameters.importanceSampling);
+        double energy = system->runMetropolisSteps(numberOfSteps, parameters.delta_t, parameters.importanceSampling);
 
         parameters.energy = energy;
     }

@@ -1,5 +1,2 @@
 alpha	numberOfDimensions	numberOfParticles	dt	importanceSampling	energy
-0.5	3	3	0.1	1	4.58031
-0.5	3	3	0.1	0	4.68193
-0.5	3	3	1000	1	6.57114
-0.5	3	3	1000	0	4.68193
+0.5	1	1	0.1	1	0.5

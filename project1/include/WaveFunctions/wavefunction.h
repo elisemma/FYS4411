@@ -13,6 +13,7 @@ public:
     virtual double computeDoubleDerivativeAnalytical(std::vector<class Particle*> particles) = 0;
     virtual double computeDoubleDerivativeNumerical(std::vector<class Particle*> particles) = 0;
     virtual std::vector<double> computeQuantumForceAnalytical(Particle* particles) = 0;
+    virtual double computeDerivative(std::vector<class Particle*> particles) = 0;
 protected:
     // int     m_numberOfParameters = 0;
     // std::vector<double> m_parameters = std::vector<double>();

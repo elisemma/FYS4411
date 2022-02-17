@@ -35,28 +35,12 @@ void Sampler::sample(bool acceptedStep) {
 
     m_cumulativeEnergy  += localEnergy;
 
-    double trail_derivative = m_system->getWaveFunction()->computeDerivative(m_system->getParticles());
+    double trial_derivative = m_system->getWaveFunction()->computeDerivative(m_system->getParticles());
 
-    m_cululativeTrailDerivative += trail_derivative;
-    m_cumulativeTrailEnergyDerivative += trail_derivative * localEnergy;
+    m_cumulativeTrailDerivative += trial_derivative;
+    m_cumulativeTrailEnergyDerivative += trial_derivative * localEnergy;
 
     m_stepNumber++;
-}
-
-double Sampler::getAlphaDerivativeChange() {
-    double steps = m_system->getNumberOfMetropolisSteps();
-
-    m_energy = m_cumulativeEnergy / steps;
-
-    // Term 1
-    double m_expectedTrailEnergyDerivative = m_cumulativeTrailEnergyDerivative / steps;
-
-    // Term 2 (part 1)
-    double m_expectedTrailDerivative = m_cululativeTrailDerivative / steps;
-
-    // Final
-    // TODO: We need eta
-    return 0.01 * 2 * (m_expectedTrailEnergyDerivative - m_expectedTrailDerivative * m_energy);
 }
 
 void Sampler::printOutputToTerminal() {
@@ -80,4 +64,24 @@ void Sampler::printOutputToTerminal() {
     cout << "  -- Results -- " << endl;
     cout << " Energy : " << m_energy << endl;
     cout << endl;
+}
+
+void Sampler::computeAverages() {
+    /* Compute the averages of the sampled quantities. You need to think
+     * thoroughly through what is written here currently; is this correct?
+     */
+
+    double steps = m_system->getNumberOfMetropolisSteps();
+
+    m_energy = m_cumulativeEnergy / steps;
+
+    // Term 1
+    double m_expectedTrailEnergyDerivative = m_cumulativeTrailEnergyDerivative / steps;
+
+    // Term 2 (part 1)
+    double m_expectedTrailDerivative = m_cumulativeTrailDerivative / steps;
+
+    // Final
+    // TODO: We need eta
+    m_alphaDerivativeChange = 0.01 * 2 * (m_expectedTrailEnergyDerivative - m_expectedTrailDerivative * m_energy);
 }

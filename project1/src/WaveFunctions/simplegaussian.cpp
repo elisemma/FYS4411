@@ -75,7 +75,10 @@ double SimpleGaussian::computeDerivative(vector<Particle*> particles) {
     // TODO: Should we divide by the wave function giving -alpha*r_squared?
     // And do we want the -2? (mostly because I have seen them a few times before, and not particularly because I think they would fit)
 
-    double minus_alpha_r_squared = - alpha * m_system->calculate_r_squared(particles);
-
-    return minus_alpha_r_squared * exp(minus_alpha_r_squared);
+    double r_squared = m_system->calculate_r_squared(particles);
+    return -r_squared;
+    // return -2*alpha * r_squared;
+    // double minus_alpha_r_squared = - alpha * m_system->calculate_r_squared(particles);
+    //
+    // return minus_alpha_r_squared * exp(minus_alpha_r_squared);
 }

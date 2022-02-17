@@ -30,6 +30,7 @@ public:
     int getNumberOfMetropolisSteps()    { return m_numberOfMetropolisSteps; }
     double getEquilibrationFraction()   { return m_equilibrationFraction; }
     double calculate_r_squared(std::vector<Particle*> particles);
+    double getAlphaDerivativeChange();
 
 private:
     void initialize_system(double omega, double alpha, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength);

@@ -62,7 +62,7 @@ int main() {
                         parametersVec.push_back(Parameters(alpha, numberOfDimensions, numberOfParticles, delta_t, importanceSampling));
 
     cout << "NOTE: The parameters were hijacked by a simple single config:))" << endl;
-    parametersVec = {Parameters(0.5, 1, 1, 0.1, true)};
+    parametersVec = {Parameters(0.51, 3, 3, 0.1, true)};
 
     #pragma omp parallel for schedule(dynamic)
     for (auto &parameters : parametersVec) {

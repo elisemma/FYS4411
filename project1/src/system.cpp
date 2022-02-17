@@ -141,6 +141,7 @@ double System::runMetropolisSteps(int numberOfMetropolisSteps, double delta_t, b
     }
     m_sampler->computeAverages();
     m_sampler->printOutputToTerminal();
+    cout << "Alpha derivative: " << m_sampler->getAlphaDerivativeChange() << endl;
 
     return m_sampler->getEnergy();
 }

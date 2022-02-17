@@ -20,6 +20,7 @@ void Sampler::setNumberOfMetropolisSteps(int steps) {
     m_numberOfMetropolisSteps = steps;
 }
 
+// TODO: What to do with accepted step?
 void Sampler::sample(bool acceptedStep) {
     // Make sure the sampling variable(s) are initialized at the first step.
     if (m_stepNumber == 0) {
@@ -31,8 +32,32 @@ void Sampler::sample(bool acceptedStep) {
      */
     double localEnergy = m_system->getHamiltonian()->
                          computeLocalEnergy(m_system->getParticles());
+
     m_cumulativeEnergy  += localEnergy;
+
+    double trail_derivative = m_system->getWaveFunction()->computeDerivative(m_system->getParticles());
+
+    m_cululativeTrailDerivative += trail_derivative;
+    m_cumulativeTrailEnergyDerivative += trail_derivative * localEnergy;
+
     m_stepNumber++;
+}
+
+double Sampler::getAlphaDerivativeChange() {
+    double steps = m_system->getNumberOfMetropolisSteps();
+
+    m_energy = m_cumulativeEnergy / steps;
+
+    // TODO: Do we want to multiply by 2?
+    // Term 1
+    double m_expectedTrailEnergyDerivative = m_cumulativeTrailEnergyDerivative / steps;
+
+    // Term 2 (part 1)
+    double m_expectedTrailDerivative = m_cululativeTrailDerivative / steps;
+
+    // Final
+    // TODO: We need eta
+    return 0.01 * 2 * (m_expectedTrailEnergyDerivative - m_expectedTrailDerivative * m_energy);
 }
 
 void Sampler::printOutputToTerminal() {

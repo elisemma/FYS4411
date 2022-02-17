@@ -118,7 +118,7 @@ bool System::metropolisStep(bool importance, double delta_t) {
 
 }
 
-double System::runMetropolisSteps(int numberOfMetropolisSteps, double delta_t, bool importanceSampling) {
+void System::runMetropolisSteps(int numberOfMetropolisSteps, double delta_t, bool importanceSampling) {
     m_particles                 = m_initialState->getParticles();
     m_sampler                   = new Sampler(this);
     m_numberOfMetropolisSteps   = numberOfMetropolisSteps;
@@ -141,9 +141,12 @@ double System::runMetropolisSteps(int numberOfMetropolisSteps, double delta_t, b
     }
     m_sampler->computeAverages();
     m_sampler->printOutputToTerminal();
-    cout << "Alpha derivative: " << m_sampler->getAlphaDerivativeChange() << endl;
+
     m_alphaDerivativeChange = m_sampler->getAlphaDerivativeChange();
-    return m_sampler->getEnergy();
+    m_energy = m_sampler->getEnergy();
+    m_energyVariance = m_sampler->getEnergyVariance();
+
+    // return m_sampler->getEnergy();
 }
 
 void System::setNumberOfParticles(int numberOfParticles) {

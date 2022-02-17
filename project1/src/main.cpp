@@ -17,10 +17,10 @@ using namespace std;
 struct Parameters {
     double alpha, delta_t, energy;
     int numberOfDimensions, numberOfParticles;
-    bool importanceSampling;
+    bool importanceSampling, useNumerical;
 
-    Parameters(double alpha, int numberOfDimensions, int numberOfParticles, double delta_t, bool importanceSampling) :
-        alpha(alpha), delta_t(delta_t), numberOfDimensions(numberOfDimensions), numberOfParticles(numberOfParticles), importanceSampling(importanceSampling) {}
+    Parameters(double alpha, int numberOfDimensions, int numberOfParticles, double delta_t, bool importanceSampling, bool useNumerical) :
+        alpha(alpha), delta_t(delta_t), numberOfDimensions(numberOfDimensions), numberOfParticles(numberOfParticles), importanceSampling(importanceSampling), useNumerical(useNumerical) {}
 };
 
 void gradient_alpha_search(Parameters parameters, int seed){
@@ -31,17 +31,19 @@ void gradient_alpha_search(Parameters parameters, int seed){
   int    numberOfSteps      = (int) 1e6;
 
 
-      System* system = new System(
-              omega,
-              parameters.alpha,
-              parameters.numberOfDimensions,
-              parameters.numberOfParticles,
-              equilibration,
-              stepLength,
-              seed
-          );
+  System* system = new System(
+          omega,
+          parameters.alpha,
+          parameters.numberOfDimensions,
+          parameters.numberOfParticles,
+          equilibration,
+          stepLength,
+          seed
+      );
 
-  double energy = system->runMetropolisSteps(numberOfSteps, parameters.delta_t, parameters.importanceSampling);
+  system->runMetropolisSteps(numberOfSteps, parameters.delta_t, parameters.importanceSampling);
+  double energy = system->getEnergy();
+  // double energy = system->runMetropolisSteps(numberOfSteps, parameters.delta_t, parameters.importanceSampling);
 
 //TODO: Verify if h=0.001 is ok as step
   double alpha_new = parameters.alpha - 0.001*system->getAlphaDerivativeChange();
@@ -76,6 +78,7 @@ int main() {
     vector<double> alphaVec{0.5};
 
     vector<bool> importanceSamplingVec{true, false};
+    vector<bool> useNumericalVec{true, false};
 
     vector<Parameters> parametersVec;
 
@@ -84,27 +87,32 @@ int main() {
             for (int numberOfParticles : numberOfParticlesVec)
                 for (double delta_t : delta_tVec)
                     for (bool importanceSampling : importanceSamplingVec)
-                        parametersVec.push_back(Parameters(alpha, numberOfDimensions, numberOfParticles, delta_t, importanceSampling));
+                        for (bool useNumerical : useNumericalVec)
+                            parametersVec.push_back(Parameters(alpha, numberOfDimensions, numberOfParticles, delta_t, importanceSampling, useNumerical));
 
-    cout << "NOTE: The parameters were hijacked by a simple single config:))" << endl;
-    parametersVec = {Parameters(0.5, 3, 3, 0.1, true)};
+    cout << "NOTE: The parameters were hijacked by an evil space pirate:))" << endl;
 
-    gradient_alpha_search(parametersVec[0], seed);
-    exit(69);
+    parametersVec = {Parameters(0.3, 3, 3, 0.1, true, false)};
+
+    // gradient_alpha_search(parametersVec[0], seed);
+    // exit(69);
 
     #pragma omp parallel for schedule(dynamic)
     for (auto &parameters : parametersVec) {
+        // TODO: Actually do something if you have use numberical
         System* system = new System(
-                omega,
-                parameters.alpha,
-                parameters.numberOfDimensions,
-                parameters.numberOfParticles,
-                equilibration,
-                stepLength,
-                seed
-            );
+            omega,
+            parameters.alpha,
+            parameters.numberOfDimensions,
+            parameters.numberOfParticles,
+            equilibration,
+            stepLength,
+            seed
+        );
 
-        double energy = system->runMetropolisSteps(numberOfSteps, parameters.delta_t, parameters.importanceSampling);
+        system->runMetropolisSteps(numberOfSteps, parameters.delta_t, parameters.importanceSampling);
+        double energy = system->getEnergy();
+        // double energy = system->runMetropolisSteps(numberOfSteps, parameters.delta_t, parameters.importanceSampling);
 
         parameters.energy = energy;
     }

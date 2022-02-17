@@ -8,12 +8,14 @@ public:
     void printOutputToTerminal();
     void computeAverages();
     double getEnergy() { return m_energy; }
+    double getEnergyVariance() { return m_energyVariance; }
     double getAlphaDerivativeChange() { return m_alphaDerivativeChange; }
 
 private:
     int     m_numberOfMetropolisSteps = 0;
     int     m_stepNumber = 0;
     double  m_energy = 0;
+    double  m_energyVariance = 0;
     double  m_cumulativeEnergy = 0;
     double  m_cumulativeEnergySquared = 0;
     double  m_alphaDerivativeChange = 0;

@@ -10,7 +10,7 @@ public:
     // System();
     // System(int seed);
     bool metropolisStep             (bool importance, double delta_t);
-    double runMetropolisSteps       (int numberOfMetropolisSteps, double delta_t, bool importanceSampling);
+    void runMetropolisSteps         (int numberOfMetropolisSteps, double delta_t, bool importanceSampling);
     void setNumberOfParticles       (int numberOfParticles);
     void setNumberOfDimensions      (int numberOfDimensions);
     void setStepLength              (double stepLength);
@@ -23,7 +23,8 @@ public:
     class Sampler*                  getSampler()        { return m_sampler; }
     std::vector<class Particle*>    getParticles()      { return m_particles; }
     class Random*                   getRandomEngine()   { return m_random; }
-    double getEnergy                ();
+    double getEnergy                () { return m_energy; };
+    double getEnergyVariance        () { return m_energyVariance; };
     double getStepLength()              { return m_stepLength; }
     int getNumberOfParticles()          { return m_numberOfParticles; }
     int getNumberOfDimensions()         { return m_numberOfDimensions; }
@@ -47,5 +48,7 @@ private:
     std::vector<class Particle*>    m_particles = std::vector<class Particle*>();
     class Random*                   m_random = nullptr;
     double                          m_alphaDerivativeChange;
+    double                          m_energy;
+    double                          m_energyVariance;
 
 };

@@ -34,6 +34,7 @@ void Sampler::sample(bool acceptedStep) {
                          computeLocalEnergy(m_system->getParticles());
 
     m_cumulativeEnergy  += localEnergy;
+    m_cumulativeEnergySquared  += localEnergy*localEnergy;
 
     double trial_derivative = m_system->getWaveFunction()->computeDerivative(m_system->getParticles());
 
@@ -62,7 +63,8 @@ void Sampler::printOutputToTerminal() {
     cout << "Alpha: " << m_system->getWaveFunction()->getAlpha() << endl;
     cout << endl;
     cout << "  -- Results -- " << endl;
-    cout << " Energy : " << m_energy << endl;
+    cout << " Energy          : " << m_energy << endl;
+    cout << " Energy Variance : " << m_energyVariance << endl;
     cout << endl;
 }
 
@@ -74,6 +76,9 @@ void Sampler::computeAverages() {
     double steps = m_system->getNumberOfMetropolisSteps();
 
     m_energy = m_cumulativeEnergy / steps;
+
+    // V = E(x^2) - E(x)^2
+    m_energyVariance = (m_cumulativeEnergySquared / steps) - (m_energy * m_energy);
 
     // Term 1
     double m_expectedTrailEnergyDerivative = m_cumulativeTrailEnergyDerivative / steps;

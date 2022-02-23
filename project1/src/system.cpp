@@ -48,7 +48,7 @@ double System::calculate_r_squared(std::vector<Particle*> particles) {
     double r_squared = 0;
     for (Particle* particle : particles) {
         for (double pos_i : particle->getPosition()) {
-            r_squared += pow(pos_i, 2);
+            r_squared += pos_i * pos_i;
         }
     }
     return r_squared;

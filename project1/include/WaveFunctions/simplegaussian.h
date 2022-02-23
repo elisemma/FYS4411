@@ -8,7 +8,9 @@ public:
     double evaluate(std::vector<Particle*> particles);
     // double computeDoubleDerivative(std::vector<Particle*> particles, bool analytical);
     double computeDoubleDerivativeAnalytical(std::vector<Particle*> particles);
-    double computeDoubleDerivativeNumerical(std::vector<Particle*> particles);
+    // double computeDoubleDerivativeNumerical(std::vector<Particle*> particles);
     std::vector<double> computeQuantumForceAnalytical(Particle* particles);
     double computeDerivative(std::vector<class Particle*> particles);
+// private:
+//     void move_particles(std::vector<Particle*> particles, double step_length, int dim);
 };

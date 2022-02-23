@@ -11,7 +11,9 @@
 
 
 #include "Hamiltonians/harmonicoscillator.h"
+#include "Hamiltonians/elliptical.h"
 #include "WaveFunctions/simplegaussian.h"
+#include "WaveFunctions/interactive.h"
 #include "InitialStates/randomuniform.h"
 
 using namespace std;
@@ -28,13 +30,19 @@ System::System(double omega, double alpha, int numberOfDimensions, int numberOfP
 }
 
 void System::initialize_system(double omega, double alpha, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength) {
-    setHamiltonian                     (new HarmonicOscillator(this, omega));
-    setWaveFunction                    (new SimpleGaussian(this, alpha));
+    // setHamiltonian                     (new HarmonicOscillator(this, omega));
+    // setWaveFunction                    (new SimpleGaussian(this, alpha));
+    // TODO: We need a nicer way of selecting simple gaussian or interactive
+    cout << "The initialization of the interactive case is kinda wack!" << endl;
+    double beta = 2.82843;
+    double a = 0.0043*(1-2e-6);
+    setHamiltonian                     (new Elliptical(this, omega, beta, a));
+    setWaveFunction                    (new Interactive(this, alpha, beta, a));
     setInitialState                    (new RandomUniform(this, numberOfDimensions, numberOfParticles));
     setEquilibrationFraction           (equilibration);
     setStepLength                      (stepLength);
-
 }
+
 // System::System() {
 //     m_random = new Random();
 // }

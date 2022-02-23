@@ -42,7 +42,7 @@ void gradient_alpha_search(Parameters parameters, int seed){
       );
 
   system->runMetropolisSteps(numberOfSteps, parameters.delta_t, parameters.importanceSampling);
-  double energy = system->getEnergy();
+  // double energy = system->getEnergy();
   // double energy = system->runMetropolisSteps(numberOfSteps, parameters.delta_t, parameters.importanceSampling);
 
 //TODO: Verify if h=0.001 is ok as step
@@ -90,7 +90,7 @@ int main() {
                         for (bool useNumerical : useNumericalVec)
                             parametersVec.push_back(Parameters(alpha, numberOfDimensions, numberOfParticles, delta_t, importanceSampling, useNumerical));
 
-    cout << "NOTE: The parameters were hijacked by an evil space pirate:))" << endl;
+    cout << "NOTE: The parameters were hijacked by an evil space pirate:((" << endl;
 
     parametersVec = {Parameters(0.3, 3, 3, 0.1, true, false)};
 

@@ -1,12 +1,8 @@
 #include "Hamiltonians/harmonicoscillator.h"
 #include <cassert>
-#include <iostream>
 #include "project1/system.h"
 #include "project1/particle.h"
 #include "WaveFunctions/wavefunction.h"
-
-using std::cout;
-using std::endl;
 
 HarmonicOscillator::HarmonicOscillator(System* system, double omega) :
         Hamiltonian(system) {
@@ -38,10 +34,10 @@ double HarmonicOscillator::computeLocalEnergy(std::vector<Particle*> particles) 
      * m_system->getWaveFunction()...
      */
 
-    double double_derivative = 0, r_squared = m_system->calculate_r_squared(particles);
+    double double_derivative, r_squared = m_system->calculate_r_squared(particles);
 
     // TODO: m_omega eller m_omega * m_omega, we do be lovin us some pow action!<3
-    double potentialEnergy = 0.5 * pow(m_omega, 2) * r_squared;
+    double potentialEnergy = 0.5 * (m_omega * m_omega) * r_squared;
 
     // TODO: Check if numeric or analytical
     // TODO: the comments say something about analytical or numerical, here we only use analytical

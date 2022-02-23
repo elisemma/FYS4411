@@ -186,3 +186,17 @@ void System::setWaveFunction(WaveFunction* waveFunction) {
 void System::setInitialState(InitialState* initialState) {
     m_initialState = initialState;
 }
+
+// TODO: Calculate all the distances at once for improved speed
+// double System::getDistance(std::vector<Particle*> particles, int i, int j) {
+double System::getDistance(int i, int j) {
+    vector<double> pos_i = m_particles[i]->getPosition();
+    vector<double> pos_j = m_particles[j]->getPosition();
+
+    double distance = 0;
+    for (int dim = 0; dim < getNumberOfDimensions(); dim++) {
+        distance += abs(pos_i[dim] - pos_j[dim]);
+    }
+
+    return distance;
+}

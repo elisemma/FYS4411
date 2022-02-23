@@ -32,6 +32,7 @@ public:
     double getEquilibrationFraction()   { return m_equilibrationFraction; }
     double calculate_r_squared(std::vector<Particle*> particles);
     double getAlphaDerivativeChange()   {return m_alphaDerivativeChange; }
+    double getDistance(int i, int j);
 
 
 private:

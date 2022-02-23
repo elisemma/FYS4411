@@ -36,7 +36,7 @@ double Interactive::evaluate(vector<Particle*> particles) {
     double f_product = 1;
     for (int j = 0; j < number_of_particles - 1; j++) {
         for (int k = j + 1; k < number_of_particles; k++) {
-            double distance = getDistance(particles, j, k);
+            double distance = m_system->getDistance(j, k);
 
             // TODO: Is this one named Mr. Jastrow?
             if (distance > a) {
@@ -49,19 +49,6 @@ double Interactive::evaluate(vector<Particle*> particles) {
     }
 
     return g_product * f_product;
-}
-
-// TODO: Calculate all the distances at once for improved speed
-double Interactive::getDistance(std::vector<class Particle*> particles, int i, int j) {
-    vector<double> pos_i = particles[i]->getPosition();
-    vector<double> pos_j = particles[j]->getPosition();
-
-    double distance = 0;
-    for (int dim = 0; dim < m_system->getNumberOfDimensions(); dim++) {
-        distance += abs(pos_i[dim] - pos_j[dim]);
-    }
-
-    return distance;
 }
 
 // TODO: THESE ARE LIKE BIG TIME WRONG, PLEASE DONT EVER FOREVER USE THEM!!

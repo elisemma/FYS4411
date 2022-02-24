@@ -33,7 +33,7 @@ double Interactive::evaluate(vector<Particle*> particles) {
     double g_product = exp(-alpha * r_squared);
 
     int number_of_particles = particles.size();
-    double f_product = 1;
+    double f_product = 1; // f_product seems to be the jastrow factor
     for (int j = 0; j < number_of_particles - 1; j++) {
         for (int k = j + 1; k < number_of_particles; k++) {
             double distance = m_system->getDistance(j, k);

@@ -18,30 +18,47 @@
 
 using namespace std;
 
-// TODO: Include seed
-System::System(double omega, double alpha, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength) {
-    m_random = new Random();
-    initialize_system(omega, alpha, numberOfDimensions, numberOfParticles, equilibration, stepLength);
-}
+// System::System(double omega, double alpha, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength, bool useNumerical) {
+//     m_random = new Random();
+//     initialize_system(omega, alpha, numberOfDimensions, numberOfParticles, equilibration, stepLength, useNumerical);
+// }
 
-System::System(double omega, double alpha, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength, int seed) {
+System::System(double omega, double alpha, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength, bool useNumerical, int seed) {
     m_random = new Random(seed);
-    initialize_system(omega, alpha, numberOfDimensions, numberOfParticles, equilibration, stepLength);
+    setHamiltonian                     (new HarmonicOscillator(this, omega, useNumerical));
+    setWaveFunction                    (new SimpleGaussian(this, alpha));
+    setInitialState                    (new RandomUniform(this, numberOfDimensions, numberOfParticles));
+    setEquilibrationFraction           (equilibration);
+    setStepLength                      (stepLength);
 }
 
-void System::initialize_system(double omega, double alpha, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength) {
-    // setHamiltonian                     (new HarmonicOscillator(this, omega));
-    // setWaveFunction                    (new SimpleGaussian(this, alpha));
-    // TODO: We need a nicer way of selecting simple gaussian or interactive
-    cout << "The initialization of the interactive case is kinda wack!" << endl;
-    double beta = 2.82843;
-    double a = 0.0043*(1-2e-6);
+System::System(double omega, double alpha, double beta, double gamma, double a, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength, int seed) {
+    assert(beta == gamma);
+
+    m_random = new Random(seed);
+
+    // double beta = 2.82843;
+    // double a = 0.0043*(1-2e-6);
     setHamiltonian                     (new Elliptical(this, omega, beta, a));
     setWaveFunction                    (new Interactive(this, alpha, beta, a));
     setInitialState                    (new RandomUniform(this, numberOfDimensions, numberOfParticles));
     setEquilibrationFraction           (equilibration);
     setStepLength                      (stepLength);
 }
+
+// TODO: Check that the particles are not overlapping for the interactive case, using 
+    // for (int j = 0; j < number_of_particles - 1; j++) {
+    //     for (int k = j + 1; k < number_of_particles; k++) {
+    //         double distance = m_system->getDistance(j, k);
+    //
+    //         // TODO: Increase this number plz:)
+    //         if (distance <= m_a) {
+    //             RAISE ERROR, "The particles are overlapping!";
+    //             REMAKE THE SYSTEM IN ANOTHER CONFIGURATION, TO AVOID THE OVERLAPPING PARTICLES
+    //         }
+    //     }
+    // }
+// TODO: Choose if we want harmonic and simple or elliptical and interactive in a nicer way
 
 // System::System() {
 //     m_random = new Random();
@@ -74,13 +91,9 @@ bool System::metropolisStep(bool importance, double delta_t) {
     double movement[m_numberOfDimensions], wave_before = m_waveFunction->evaluate(m_particles);
     std::vector<double> quantum_before;
 
-    // TODO: Check that importance step is supposed to only do one particle at a time
-    // TODO: We want some monte carlo action <3??
-    // TODO: Check that the quantum_before is actually updated here!
-    if (importance) quantum_before = m_waveFunction->computeQuantumForceAnalytical(particle); // TODO: GET THE QUANTUM FORCE!
+    if (importance) quantum_before = m_waveFunction->computeQuantumForceAnalytical(particle);
 
     for (int i = 0; i < m_numberOfDimensions; i++) {
-        // TODO: should this be -.5 or *2-1?
         movement[i] = m_stepLength*(m_random->nextDouble() - 0.5);
         particle->adjustPosition(movement[i], i);
     }
@@ -89,25 +102,21 @@ bool System::metropolisStep(bool importance, double delta_t) {
 
     double ratio = wave_after*wave_after/wave_before*wave_before;
 
-    // TO: Check the the implementation is efficient
+    // TODO: Check the the implementation is efficient
     if (importance) {
         std::vector<double> quantum_after = m_waveFunction->computeQuantumForceAnalytical(particle);
-        // TODO: get the quantum force after the move
         // do some green shroom ratio or smtn
 
         //double delta_t = 0.01;
         double D = 0.5;
         // double F_after = m_waveFunction->computeQuantumForceAnalytical(particle);
-        //TODO: N = numberOfParticles???
         double N = getNumberOfParticles();
         double d = getNumberOfDimensions();
         double G_yx = 0, G_xy = 0;
 
         for (int j = 0; j < m_numberOfDimensions; j++){
-
-          G_yx += pow(1/pow(4*M_PI*D*delta_t, d*N/2)*exp(-pow(movement[j] - D*delta_t*quantum_before[j],2)/(4*D*delta_t)),2);
-          G_xy += pow(1/pow(4*M_PI*D*delta_t, d*N/2)*exp(-pow(-movement[j] - D*delta_t*quantum_after[j],2)/(4*D*delta_t)),2);
-
+            G_yx += pow(1/pow(4*M_PI*D*delta_t, d*N/2)*exp(-pow( movement[j] - D*delta_t*quantum_before[j],2)/(4*D*delta_t)),2);
+            G_xy += pow(1/pow(4*M_PI*D*delta_t, d*N/2)*exp(-pow(-movement[j] - D*delta_t*quantum_after[j] ,2)/(4*D*delta_t)),2);
         }
 
         //double q = sqrt(G_yx/G_xy)*ratio;
@@ -116,7 +125,6 @@ bool System::metropolisStep(bool importance, double delta_t) {
 
     }
 
-    // should we check if ratio is more than 1?
     if (m_random->nextDouble() < ratio) return true;
 
     for (int i = 0; i < m_numberOfDimensions; i++) particle->adjustPosition(-movement[i], i);
@@ -153,6 +161,7 @@ void System::runMetropolisSteps(int numberOfMetropolisSteps, double delta_t, boo
     m_alphaDerivativeChange = m_sampler->getAlphaDerivativeChange();
     m_energy = m_sampler->getEnergy();
     m_energyVariance = m_sampler->getEnergyVariance();
+    m_acceptedMetropolisStepRatio = m_sampler->getAcceptedMetropolisStepRatio();
 
     // return m_sampler->getEnergy();
 }

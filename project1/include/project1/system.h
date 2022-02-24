@@ -4,11 +4,10 @@
 
 class System {
 public:
-    System(double omega, double alpha, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength);
-    System(double omega, double alpha, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength, int seed);
+    // System(double omega, double alpha, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength, bool useNumerical);
+    System(double omega, double alpha, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength, bool useNumerical, int seed);
+    System(double omega, double alpha, double beta, double gamma, double a, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength, int seed);
 
-    // System();
-    // System(int seed);
     bool metropolisStep             (bool importance, double delta_t);
     void runMetropolisSteps         (int numberOfMetropolisSteps, double delta_t, bool importanceSampling);
     void setNumberOfParticles       (int numberOfParticles);
@@ -36,7 +35,6 @@ public:
 
 
 private:
-    void initialize_system(double omega, double alpha, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength);
     int                             m_numberOfParticles = 0;
     int                             m_numberOfDimensions = 0;
     int                             m_numberOfMetropolisSteps = 0;
@@ -51,5 +49,5 @@ private:
     double                          m_alphaDerivativeChange;
     double                          m_energy;
     double                          m_energyVariance;
-
+    double                          m_acceptedMetropolisStepRatio;
 };

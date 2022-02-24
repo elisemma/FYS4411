@@ -4,10 +4,10 @@
 #include "project1/particle.h"
 #include "WaveFunctions/wavefunction.h"
 
-HarmonicOscillator::HarmonicOscillator(System* system, double omega) :
-        Hamiltonian(system) {
+HarmonicOscillator::HarmonicOscillator(System* system, double omega, bool use_numerical) :Hamiltonian(system) {
     assert(omega > 0);
     m_omega  = omega;
+    m_use_numerical = use_numerical;
 }
 
 // double HarmonicOscillator::computeLocalEnergy(std::vector<Particle*> particles) {
@@ -43,8 +43,11 @@ double HarmonicOscillator::computeLocalEnergy(std::vector<Particle*> particles) 
     // TODO: the comments say something about analytical or numerical, here we only use analytical
     // double_derivative = m_system->getWaveFunction()->computeDoubleDerivative(particles, true);
 
-     // double_derivative = m_system->getWaveFunction()->computeDoubleDerivativeAnalytical(particles);
-    double_derivative = m_system->getWaveFunction()->computeDoubleDerivativeNumerical(particles);
+    if (m_use_numerical) {
+        double_derivative = m_system->getWaveFunction()->computeDoubleDerivativeNumerical(particles);
+    } else {
+        double_derivative = m_system->getWaveFunction()->computeDoubleDerivativeAnalytical(particles);
+    }
 
     //double_derivative = m_system->getWaveFunction()->computeDoubleDerivative(particles, false);
 

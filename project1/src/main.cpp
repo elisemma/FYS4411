@@ -23,31 +23,52 @@ struct Parameters {
         alpha(alpha), delta_t(delta_t), numberOfDimensions(numberOfDimensions), numberOfParticles(numberOfParticles), importanceSampling(importanceSampling), useNumerical(useNumerical) {}
 };
 
-void gradient_alpha_search(Parameters parameters, int seed){
-  //for (auto &parameters : parametersVec) {
-  double omega              = 1.0;          // Oscillator frequency.
-  double stepLength         = 0.1;
-  double equilibration      = 0.1;          // Amount of the total steps used
-  int    numberOfSteps      = (int) 1e6;
+void gradient_alpha_search(Parameters parameters, int seed, double eta, double delta) {
+    //for (auto &parameters : parametersVec) {
+    double omega              = 1.0;          // Oscillator frequency.
+    double stepLength         = 0.1;
+    double equilibration      = 0.1;          // Amount of the total steps used
+    int    numberOfSteps      = (int) 1e6;
+    double alpha              = parameters.alpha;
+    double alpha_change       = 1;
 
+    // TODO: Add code to ensure that it will converge
+    while (abs(alpha_change) > delta) {
+        System* system = new System(
+                omega,
+                alpha,
+                parameters.numberOfDimensions,
+                parameters.numberOfParticles,
+                equilibration,
+                stepLength,
+                parameters.useNumerical,
+                seed
+            );
 
-  System* system = new System(
-          omega,
-          parameters.alpha,
-          parameters.numberOfDimensions,
-          parameters.numberOfParticles,
-          equilibration,
-          stepLength,
-          seed
-      );
+        system->runMetropolisSteps(numberOfSteps, parameters.delta_t, parameters.importanceSampling);
 
-  system->runMetropolisSteps(numberOfSteps, parameters.delta_t, parameters.importanceSampling);
-  // double energy = system->getEnergy();
-  // double energy = system->runMetropolisSteps(numberOfSteps, parameters.delta_t, parameters.importanceSampling);
+        alpha_change = eta * system->getAlphaDerivativeChange();
+        alpha -= alpha_change;
 
-//TODO: Verify if h=0.001 is ok as step
-  double alpha_new = parameters.alpha - 0.001*system->getAlphaDerivativeChange();
-  cout << "alpha_new" << alpha_new << endl;
+        cout << "alpha: " << alpha << " alpha_change: " << alpha_change << endl;
+    }
+
+}
+
+void do_elliptical(double omega, double alpha, double beta, double a, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength, int seed, int numberOfSteps, double delta_t, bool importanceSampling) {
+    System* system = new System(
+            omega,
+            alpha,
+            beta,
+            beta,
+            a,
+            numberOfDimensions,
+            numberOfParticles,
+            equilibration,
+            stepLength,
+            seed
+        );
+    system->runMetropolisSteps(numberOfSteps, delta_t, importanceSampling);
 }
 
 int main() {
@@ -68,11 +89,9 @@ int main() {
     vector<int> numberOfDimensionsVec{3};
     // vector<int> numberOfParticlesVec{1, 4, 6};
     vector<int> numberOfParticlesVec{3};
-    // vector<double> delta_tVec{0.1, 1000}; // TODO: Hvorfor endres ikke energy når vi endrer dt??????
-    vector<double> delta_tVec{0.1, 1000}; // TODO: Hvorfor endres ikke energy når vi endrer dt??????
+    vector<double> delta_tVec{0.1, 1000};
     // int numberOfParticlesArray[] = {100};
 
-    // TODO: make this in a nicer way?
     // double alpha_values[] = {0.01, 0.06, 0.11, 0.16, 0.21, 0.26, 0.31, 0.36, 0.41, 0.46, 0.51, 0.56, 0.61, 0.66, 0.71, 0.76, 0.81, 0.86, 0.91, 0.96};
     //vector<double> alphaVec{0.01, 0.21, 0.41, 0.61, 0.81, 0.96};
     vector<double> alphaVec{0.5};
@@ -92,36 +111,45 @@ int main() {
 
     cout << "NOTE: The parameters were hijacked by an evil space pirate:((" << endl;
 
-    parametersVec = {Parameters(0.3, 3, 3, 0.1, true, false)};
+    // parametersVec = {Parameters(0.5, 3, 3, 0.1, true, false)};
+    // parametersVec = {Parameters(0.1, 1, 1, 0.1, true, false)};
+    parametersVec = {Parameters(0.1, 1, 1, 0.1, true, true)};
+    Parameters p = parametersVec[0];
 
-    // gradient_alpha_search(parametersVec[0], seed);
-    // exit(69);
+    double beta = 2.82843;
+    double a = 0.0043*(1-2e-6);
+    do_elliptical(omega, p.alpha, beta, a, p.numberOfDimensions, p.numberOfParticles, equilibration, stepLength, seed, numberOfSteps, p.delta_t, p.importanceSampling);
 
-    #pragma omp parallel for schedule(dynamic)
-    for (auto &parameters : parametersVec) {
-        // TODO: Actually do something if you have use numberical
-        System* system = new System(
-            omega,
-            parameters.alpha,
-            parameters.numberOfDimensions,
-            parameters.numberOfParticles,
-            equilibration,
-            stepLength,
-            seed
-        );
-
-        system->runMetropolisSteps(numberOfSteps, parameters.delta_t, parameters.importanceSampling);
-        double energy = system->getEnergy();
-        // double energy = system->runMetropolisSteps(numberOfSteps, parameters.delta_t, parameters.importanceSampling);
-
-        parameters.energy = energy;
-    }
-
-    ofstream energyFile("output/data/energy_values.tsv");
-    energyFile << "alpha\tnumberOfDimensions\tnumberOfParticles\tdt\timportanceSampling\tenergy" << endl;
-    for (auto parameters : parametersVec)
-        energyFile << parameters.alpha << "\t" << parameters.numberOfDimensions << "\t" << parameters.numberOfParticles << "\t" << parameters.delta_t << "\t" << parameters.importanceSampling << "\t" << parameters.energy << endl;
-    energyFile.close();
+    // double eta   = 1e-1;
+    // double delta = 1e-8;
+    // gradient_alpha_search(parametersVec[0], seed, eta, delta);
+    // exit(68);
+    //
+    // #pragma omp parallel for schedule(dynamic)
+    // for (auto &parameters : parametersVec) {
+    //     // TODO: Actually do something if you have use numerical
+    //     System* system = new System(
+    //         omega,
+    //         parameters.alpha,
+    //         parameters.numberOfDimensions,
+    //         parameters.numberOfParticles,
+    //         equilibration,
+    //         stepLength,
+    //         parameters.useNumerical,
+    //         seed
+    //     );
+    //
+    //     system->runMetropolisSteps(numberOfSteps, parameters.delta_t, parameters.importanceSampling);
+    //     double energy = system->getEnergy();
+    //
+    //     parameters.energy = energy;
+    // }
+    //
+    // ofstream energyFile("output/data/energy_values.tsv");
+    // energyFile << "alpha\tnumberOfDimensions\tnumberOfParticles\tdt\timportanceSampling\tenergy" << endl;
+    // for (auto parameters : parametersVec)
+    //     energyFile << parameters.alpha << "\t" << parameters.numberOfDimensions << "\t" << parameters.numberOfParticles << "\t" << parameters.delta_t << "\t" << parameters.importanceSampling << "\t" << parameters.energy << endl;
+    // energyFile.close();
 
     return 0;
 }

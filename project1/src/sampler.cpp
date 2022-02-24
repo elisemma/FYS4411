@@ -25,7 +25,12 @@ void Sampler::sample(bool acceptedStep) {
     // Make sure the sampling variable(s) are initialized at the first step.
     if (m_stepNumber == 0) {
         m_cumulativeEnergy = 0;
+        m_cumulativeEnergySquared = 0;
+        m_cumulativeTrailDerivative = 0;
+        m_cumulativeTrailEnergyDerivative = 0;
     }
+
+    m_numberOfAcceptedMetropolisSteps += acceptedStep;
 
     /* Here you should sample all the interesting things you want to measure.
      * Note that there are (way) more than the single one here currently.
@@ -58,6 +63,7 @@ void Sampler::printOutputToTerminal() {
     cout << " Number of dimensions : " << nd << endl;
     cout << " Number of Metropolis steps run : 10^" << std::log10(ms) << endl;
     cout << " Number of equilibration steps  : 10^" << std::log10(std::round(ms*ef)) << endl;
+    cout << " Accepted ratio for Metropolis steps : " << (m_acceptedMetropolisStepRatio*100) << "%" << endl;
     cout << endl;
     cout << "  -- Wave function parameters -- " << endl;
     cout << "Alpha: " << m_system->getWaveFunction()->getAlpha() << endl;
@@ -75,6 +81,8 @@ void Sampler::computeAverages() {
 
     double steps = m_system->getNumberOfMetropolisSteps();
 
+    m_acceptedMetropolisStepRatio = m_numberOfAcceptedMetropolisSteps / steps;
+
     m_energy = m_cumulativeEnergy / steps;
 
     // V = E(x^2) - E(x)^2
@@ -87,6 +95,5 @@ void Sampler::computeAverages() {
     double m_expectedTrailDerivative = m_cumulativeTrailDerivative / steps;
 
     // Final
-    // TODO: We need eta
     m_alphaDerivativeChange = 2 * (m_expectedTrailEnergyDerivative - m_expectedTrailDerivative * m_energy);
 }

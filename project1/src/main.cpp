@@ -32,7 +32,6 @@ void gradient_alpha_search(Parameters parameters, int seed, double eta, double d
     double alpha              = parameters.alpha;
     double alpha_change       = 1;
 
-    // TODO: Add code to ensure that it will converge
     while (abs(alpha_change) > delta) {
         System* system = new System(
                 omega,
@@ -127,7 +126,6 @@ int main() {
     //
     // #pragma omp parallel for schedule(dynamic)
     // for (auto &parameters : parametersVec) {
-    //     // TODO: Actually do something if you have use numerical
     //     System* system = new System(
     //         omega,
     //         parameters.alpha,

@@ -7,7 +7,6 @@
 #include "InitialStates/initialstate.h"
 #include "Math/random.h"
 #include <math.h>
-#include <iostream>
 
 
 #include "Hamiltonians/harmonicoscillator.h"
@@ -17,11 +16,6 @@
 #include "InitialStates/randomuniform.h"
 
 using namespace std;
-
-// System::System(double omega, double alpha, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength, bool useNumerical) {
-//     m_random = new Random();
-//     initialize_system(omega, alpha, numberOfDimensions, numberOfParticles, equilibration, stepLength, useNumerical);
-// }
 
 System::System(double omega, double alpha, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength, bool useNumerical, int seed) {
     m_random = new Random(seed);
@@ -37,36 +31,23 @@ System::System(double omega, double alpha, double beta, double gamma, double a, 
 
     m_random = new Random(seed);
 
-    // double beta = 2.82843;
-    // double a = 0.0043*(1-2e-6);
     setHamiltonian                     (new Elliptical(this, omega, beta, a));
     setWaveFunction                    (new Interactive(this, alpha, beta, a));
+    // TODO: Check that the particles are not overlapping for the interactive case, using 
+        // for (int j = 0; j < number_of_particles - 1; j++) {
+        //     for (int k = j + 1; k < number_of_particles; k++) {
+        //         double distance = m_system->getDistance(j, k);
+        //
+        //         if (distance <= m_a) {
+        //             RAISE ERROR, "The particles are overlapping!";
+        //             REMAKE THE SYSTEM IN ANOTHER CONFIGURATION, TO AVOID THE OVERLAPPING PARTICLES
+        //         }
+        //     }
+        // }
     setInitialState                    (new RandomUniform(this, numberOfDimensions, numberOfParticles));
     setEquilibrationFraction           (equilibration);
     setStepLength                      (stepLength);
 }
-
-// TODO: Check that the particles are not overlapping for the interactive case, using 
-    // for (int j = 0; j < number_of_particles - 1; j++) {
-    //     for (int k = j + 1; k < number_of_particles; k++) {
-    //         double distance = m_system->getDistance(j, k);
-    //
-    //         // TODO: Increase this number plz:)
-    //         if (distance <= m_a) {
-    //             RAISE ERROR, "The particles are overlapping!";
-    //             REMAKE THE SYSTEM IN ANOTHER CONFIGURATION, TO AVOID THE OVERLAPPING PARTICLES
-    //         }
-    //     }
-    // }
-// TODO: Choose if we want harmonic and simple or elliptical and interactive in a nicer way
-
-// System::System() {
-//     m_random = new Random();
-// }
-//
-// System::System(int seed) {
-//     m_random = new Random(seed);
-// }
 
 // TODO: Should this value be saved/cached?
 double System::calculate_r_squared(std::vector<Particle*> particles) {
@@ -120,7 +101,6 @@ bool System::metropolisStep(bool importance, double delta_t) {
         }
 
         //double q = sqrt(G_yx/G_xy)*ratio;
-        //cout << q << endl;
         ratio *= sqrt(G_yx/G_xy);
 
     }
@@ -141,10 +121,6 @@ void System::runMetropolisSteps(int numberOfMetropolisSteps, double delta_t, boo
     m_sampler->setNumberOfMetropolisSteps(numberOfMetropolisSteps);
 
     for (int i=0; i < numberOfMetropolisSteps; i++) {
-        // TODO: Check if metropolis step is used..
-        // bool acceptedStep = metropolisStep(false);
-
-        // bool acceptedStep = metropolisStep(true, delta_t);
         bool acceptedStep = metropolisStep(importanceSampling, delta_t);
 
         /* Here you should sample the energy (and maybe other things using

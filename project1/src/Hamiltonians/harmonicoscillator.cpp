@@ -36,12 +36,7 @@ double HarmonicOscillator::computeLocalEnergy(std::vector<Particle*> particles) 
 
     double double_derivative, r_squared = m_system->calculate_r_squared(particles);
 
-    // TODO: m_omega eller m_omega * m_omega, we do be lovin us some pow action!<3
     double potentialEnergy = 0.5 * (m_omega * m_omega) * r_squared;
-
-    // TODO: Check if numeric or analytical
-    // TODO: the comments say something about analytical or numerical, here we only use analytical
-    // double_derivative = m_system->getWaveFunction()->computeDoubleDerivative(particles, true);
 
     if (m_use_numerical) {
         double_derivative = m_system->getWaveFunction()->computeDoubleDerivativeNumerical(particles);
@@ -51,7 +46,6 @@ double HarmonicOscillator::computeLocalEnergy(std::vector<Particle*> particles) 
 
     //double_derivative = m_system->getWaveFunction()->computeDoubleDerivative(particles, false);
 
-    //TO DO: Check natural units for m and h_bar
     double kineticEnergy = -0.5 * double_derivative;
 
     // cout << "r2: " << r_squared << endl;

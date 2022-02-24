@@ -28,7 +28,6 @@ double Elliptical::computeLocalEnergy(std::vector<Particle*> particles) {
         }
     }
 
-    // TODO: Switch between numerical and analytical in a nicer way :}
     double nabla_squared = m_system->getWaveFunction()->computeDoubleDerivativeNumerical(particles);
 
     double H_dimensionless = 0.5 * (-nabla_squared + r_squared);
@@ -40,7 +39,6 @@ double Elliptical::computeLocalEnergy(std::vector<Particle*> particles) {
     //     for (int k = j + 1; k < number_of_particles; k++) {
     //         double distance = m_system->getDistance(j, k);
     //
-    //         // TODO: Increase this number plz:)
     //         if (distance <= m_a) {
     //             v_int_sum = 1e80;
     //             break;
@@ -53,15 +51,3 @@ double Elliptical::computeLocalEnergy(std::vector<Particle*> particles) {
     return H_dimensionless;
 }
 
-// // TODO: Move getDistance to a nicer place, and use the same in interactive.cpp
-// double Elliptical::getDistance(std::vector<class Particle*> particles, int i, int j) {
-//     vector<double> pos_i = particles[i]->getPosition();
-//     vector<double> pos_j = particles[j]->getPosition();
-//
-//     double distance = 0;
-//     for (int dim = 0; dim < m_system->getNumberOfDimensions(); dim++) {
-//         distance += abs(pos_i[dim] - pos_j[dim]);
-//     }
-//
-//     return distance;
-// }

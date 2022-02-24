@@ -33,12 +33,11 @@ double Interactive::evaluate(vector<Particle*> particles) {
     double g_product = exp(-alpha * r_squared);
 
     int number_of_particles = particles.size();
-    double f_product = 1; // f_product seems to be the jastrow factor
+    double f_product = 1; // f_product seems to be the jastrow factor, nice to meet you!
     for (int j = 0; j < number_of_particles - 1; j++) {
         for (int k = j + 1; k < number_of_particles; k++) {
             double distance = m_system->getDistance(j, k);
 
-            // TODO: Is this one named Mr. Jastrow?
             if (distance > a) {
                 f_product *= 1 - (a / distance);
             } else {
@@ -69,7 +68,6 @@ vector<double> Interactive::computeQuantumForceAnalytical(Particle* particle) {
 
 
 double Interactive::computeDerivative(vector<Particle*> particles) {
-    // TODO: Should we divide by the wave function giving -alpha*r_squared?
     // And do we want the -2? (mostly because I have seen them a few times before, and not particularly because I think they would fit)
 
     double r_squared = m_system->calculate_r_squared(particles);

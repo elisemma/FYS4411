@@ -16,8 +16,7 @@ void WaveFunction::move_particles(std::vector<Particle*> particles, double step_
 
 
 double WaveFunction::computeDoubleDerivativeNumerical(vector<Particle*> particles) {
-  //TODO: Ta med step length i rapport, og numerisk feil (mindre og tregere enn analytisk)
-  //TODO: Test for ulike step length og undersøk CPU tid
+    //TODO: Set the step length in a better and more general way
     double double_derivative = 0, step_length = 1e-6;
 
     for (int dim = 0; dim < m_system->getNumberOfDimensions(); dim++) {

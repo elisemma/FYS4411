@@ -49,7 +49,7 @@ System::System(double omega, double alpha, double beta, double gamma, double a, 
     setStepLength                      (stepLength);
 }
 
-// TODO: Should this value be saved/cached?
+// TODO: Only update this value
 double System::calculate_r_squared(std::vector<Particle*> particles) {
     double r_squared = 0;
     for (Particle* particle : particles) {

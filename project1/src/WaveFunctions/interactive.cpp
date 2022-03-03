@@ -52,10 +52,96 @@ double Interactive::evaluate(vector<Particle*> particles) {
 
 // TODO: THESE ARE LIKE BIG TIME WRONG, PLEASE DONT EVER FOREVER USE THEM!!
 double Interactive::computeDoubleDerivativeAnalytical(vector<Particle*> particles) {
-    int numberOfDimensions = m_system->getNumberOfDimensions();
-    int numberOfParticles = m_system->getNumberOfParticles();
-    double r_squared = m_system->calculate_r_squared(particles);
-    return -2*numberOfParticles*numberOfDimensions*alpha + 4*pow(alpha,2)*r_squared;
+    double laplacian = 0;
+
+    for (int k = 0; k < m_system->getNumberOfParticles(); k++) {
+        laplacian += computeLaplacianK(particles, k);
+    }
+
+    return laplacian;
+}
+
+double Interactive::computeLaplacianK(vector<Particle*> particles, int k) {
+    // Term 1
+    double term1 = 0;
+    double r_squared_with_beta = 0;
+    for (int dim = 0; dim < m_system->getNumberOfDimensions(); dim++) {
+        r_squared_with_beta += particles[k]->getPosition()[dim] * particles[k]->getPosition()[dim];
+        if (dim == 2) {
+            r_squared_with_beta *= beta * beta;
+        }
+    }
+    term1 = 2 * alpha * (2 * alpha * r_squared_with_beta - (2 + beta));
+    
+    // Term 2
+    double term2 = 0;
+    for (int i = 0; i < m_system->getNumberOfParticles(); i++) {
+        if (i == k) continue;
+
+        double r_ki = computeDistance(k, i);
+
+        for (int dim = 0; dim < m_system->getNumberOfDimensions(); dim++) {
+            double nabla_phi = - 4 * alpha * particles[k]->getPosition()[dim];
+            if (dim == 2) nabla_phi *= beta;
+
+            double r_k_r_i = particles[k]->getPosition()[dim] - particles[i]->getPosition()[dim];
+
+            term2 += - 2 * nabla_phi * (r_k_r_i / r_ki)  * computeUPrime(i, k);
+        }
+    }
+
+    // Term 3
+    double term3 = 0;
+
+    for (int i = 0; i < m_system->getNumberOfParticles(); i++) {
+        if (i == k) continue;
+
+        for (int j = 0; j < m_system->getNumberOfParticles(); j++) {
+            if (j == k) continue;
+            
+            double r_ki = computeDistance(k, j);
+            double r_kj = computeDistance(k, i);
+
+            for (int dim = 0; dim < m_system->getNumberOfDimensions(); dim++) {
+                double r_k_r_i = particles[k]->getPosition()[dim] - particles[i]->getPosition()[dim];
+                double r_k_r_j = particles[k]->getPosition()[dim] - particles[j]->getPosition()[dim];
+
+                term3 += (r_k_r_i * r_k_r_j) / (r_ki * r_kj) * computeUPrime(k, i) * computeUPrime(k, j);
+            }
+        }
+    }
+
+    // Term 4
+    double term4 = 0;
+    for (int i = 0; i < m_system->getNumberOfParticles(); i++) {
+        if (i == k) continue;
+
+        double r_ki = computeDistance(k, i);
+
+        // TODO: i term 4 flytter vi på leddene
+        term4 += 2 / r_ki * computeUPrime(k, i) + computeUDoublePrime(k, i);
+    }
+
+    return term1 + term2 + term3 + term4;
+}
+
+double Interactive::computeUPrime(int k, int i) {
+    double r_ki = computeDistance(k, i);
+    return a / (r_ki * (r_ki - a));
+}
+
+double Interactive::computeUDoublePrime(int i, int k) {
+    double r_ki = computeDistance(k, i);
+    return a * (a - 2*r_ki) / ((r_ki * r_ki) * (r_ki-a) * (r_ki-a));
+}
+
+double Interactive::computeDistance(int k, int j) {
+    double distance = 0;
+    for (int dim = 0; dim < m_system->getNumberOfDimensions(); dim++) {
+        double single_distance = m_system->getParticles()[k]->getPosition()[dim] - m_system->getParticles()[j]->getPosition()[dim];
+        distance += single_distance * single_distance;
+    }
+    return sqrt(distance);
 }
 
 vector<double> Interactive::computeQuantumForceAnalytical(Particle* particle) {

@@ -16,7 +16,8 @@ void WaveFunction::move_particles(std::vector<Particle*> particles, double step_
 
 
 double WaveFunction::computeDoubleDerivativeNumerical(vector<Particle*> particles) {
-    //TODO: Set the step length in a better and more general way
+    // TODO: Set the step length in a better and more general way
+    // TODO: Move this to the simple gaussian
     double double_derivative = 0, step_length = 1e-6;
 
     for (int dim = 0; dim < m_system->getNumberOfDimensions(); dim++) {

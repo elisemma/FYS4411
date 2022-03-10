@@ -1,3 +1,4 @@
+#include <iostream>
 #include "WaveFunctions/interactive.h"
 #include "WaveFunctions/wavefunction.h"
 #include "project1/system.h"
@@ -7,12 +8,14 @@
 
 using namespace std;
 
+#define px particle->getPosition()[0]
+#define py particle->getPosition()[1]
+#define pz particle->getPosition()[2]
 #define rx(i) particles[i]->getPosition()[0]
 #define ry(i) particles[i]->getPosition()[1]
 #define rz(i) particles[i]->getPosition()[2]
 
 Interactive::Interactive(System* system, double alpha_, double beta_, double a_) : WaveFunction(system) {
-    assert(m_system->getNumberOfDimensions() == 3 && "The interactive is only implemented for three dimensions");
     assert(alpha_ >= 0);
     assert(beta_ >= 0);
 
@@ -247,102 +250,16 @@ vector<double> Interactive::computeQuantumForceAnalytical(Particle* particle) {
 
 
 double Interactive::computeDerivative(vector<Particle*> particles) {
-    // double phi_prod = 0;
-    //
-    // double *phi = (double*) malloc(particles.size() * sizeof(double));
-    // double *nabla_phi = (double*) malloc(particles.size() * sizeof(double));
-    // double u_j_lt_m_sum = 0;
-    // double *nabla_u = (double*) malloc(particles.size() * sizeof(double));
-    //
-    // double *r_ij = (double*) malloc(particles.size() * particles.size() * sizeof(double));
-    //
-    // for (size_t k = 0; k < particles.size(); k++) {
-    //     phi[k] = exp(-alpha * (rx(k)*rx(k) + ry(k)*ry(k) + beta * rz(k) * rz(k)));
-    //     phi_prod *= phi[k];
-    //     nabla_phi[k] = -2 * alpha * r_beta(particles, k) * exp(-alpha * r_beta_squared(particles, k));
-    //
-    //     // TODO: Make sure we dont need anything outside the upper triangular
-    //     for (size_t j = k+1; j < particles.size(); j++) {
-    //         r_ij[k*particles.size() + j] = computeDistance(k, j, particles);
-    //         r_ij[j*particles.size() + k] = r_ij[k*particles.size() + j];
-    //
-    //         u_j_lt_m_sum += computeU(computeDistance(k, j, particles));
-    //
-    //         // nabla_u[k*particles.size() + j] = ;
-    //         // nabla_k
-    //
-    //         double nabla_k_x =
-    //     }
-    // }
-    // double exp_u_j_lt_m_sum = exp(u_j_lt_m_sum);
-    //
-    // for (int k = 0; k < m_system->getNumberOfDimensions(); k++) {
-    //     computeNablaK(k, phi_prod, phi, nabla_phi, exp_u_j_lt_m_sum);
-    // }
     double nabla = 0;
 
-    for (size_t k = 0; k < particles.size(); k++) {
-        nabla += computeNablaK(particles, k);
+    double r_squared = 0;
+
+    for (auto particle : particles) {
+        vector<double> particle_pos = particle->getPosition();
+        r_squared += px*px + py*py + beta*pz*pz;
     }
 
-    assert(false && "Not finished yet!");
+    nabla = - r_squared * evaluate(particles);
 
     return nabla;
 }
-
-
-
-double Interactive::computeNablaK(vector<Particle*> particles, size_t k) {
-    double nabla_k = 0;
-
-    // Term 1
-    double term1 = 0;
-    // part 1
-    double term_1_part_1 = -2 * alpha * r_beta(particles, k) * exp(-alpha * r_beta_squared(particles, k));
-    // part 2
-    double term_1_part_2 = 1;
-    for (size_t i = 0; i < particles.size(); i++) {
-        if (i == k) continue;
-        term_1_part_2 *= exp(-alpha * (rx(k)*rx(k) + ry(k)*ry(k) + beta * rz(k) * rz(k)));
-    }
-    // part 3
-    double u_j_lt_m_sum = 0;
-    for (size_t k = 0; k < particles.size(); k++) {
-        for (size_t j = k+1; j < particles.size(); j++) {
-            u_j_lt_m_sum += computeU(computeDistance(k, j, particles));
-        }
-    }
-    double term_1_part_3 = exp(u_j_lt_m_sum);
-
-    term1 = term_1_part_1 * term_1_part_2 * term_1_part_3;
-
-    // Term 2
-    double term2 = 0;
-    // part 1
-    double term_2_part_1 = term_1_part_2 * exp(-alpha * (rx(k)*rx(k) + ry(k)*ry(k) + beta * rz(k) * rz(k)));
-    // part 2
-    double term_2_part_2 = term_1_part_3;
-
-
-}
-
-
-
-// double Interactive::computeNablaK(int k, double phi_prod, double *phi, double *nabla_phi, double exp_u_j_lt_m_sum) {
-//     // Assuming that the number of dimensions is 3
-//
-//     double term1 = nabla_phi[k] * (phi_prod / phi[k]) * exp_u_j_lt_m_sum;
-//
-//     double term2 = phi_prod * exp_u_j_lt_m_sum; // TODO: Add the last term
-//
-//
-//     return term1 + term2;
-//     // for (int dim = 0; dim < m_system->getNumberOfDimensions(); dim++) {
-//     //     // double nabla_phi = - 4 * alpha * particles[k]->getPosition()[dim];
-//     //     if (dim == 2) nabla_phi *= beta;
-//     //
-//     //     // double r_k_r_i = particles[k]->getPosition()[dim] - particles[i]->getPosition()[dim];
-//     //
-//     //     // term2 += - 2 * nabla_phi * (r_k_r_i / r_ki)  * computeUPrime(i, k);
-//     // }
-// }

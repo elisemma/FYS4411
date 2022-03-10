@@ -6,7 +6,8 @@ class System {
 public:
     // System(double omega, double alpha, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength, bool useNumerical);
     System(double omega, double alpha, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength, bool useNumerical, int seed);
-    System(double omega, double alpha, double beta, double gamma, double a, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength, int seed);
+    // System(double omega, double alpha, double beta, double gamma, double a, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength, int seed);
+    System(double omega, double alpha, double beta, double gamma, double a, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength, int seed, bool useNumerical);
 
     bool metropolisStep             (bool importance, double delta_t);
     void runMetropolisSteps         (int numberOfMetropolisSteps, double delta_t, bool importanceSampling);
@@ -29,9 +30,12 @@ public:
     int getNumberOfDimensions()         { return m_numberOfDimensions; }
     int getNumberOfMetropolisSteps()    { return m_numberOfMetropolisSteps; }
     double getEquilibrationFraction()   { return m_equilibrationFraction; }
-    double calculate_r_squared(std::vector<Particle*> particles);
+    // double calculate_r_squared(std::vector<Particle*> particles);
+    double recalculateRSquared();
     double getAlphaDerivativeChange()   {return m_alphaDerivativeChange; }
     double getDistance(int i, int j);
+    double getRSquared();
+    void   updateRSquared(double change);
 
 
 private:
@@ -50,4 +54,5 @@ private:
     double                          m_energy;
     double                          m_energyVariance;
     double                          m_acceptedMetropolisStepRatio;
+    double                          m_r_squared;
 };

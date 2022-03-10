@@ -3,7 +3,6 @@
 #include "project1/system.h"
 #include "project1/particle.h"
 #include "WaveFunctions/wavefunction.h"
-#include "WaveFunctions/simplegaussian.h"
 #include "Hamiltonians/hamiltonian.h"
 #include "Hamiltonians/harmonicoscillator.h"
 #include "InitialStates/initialstate.h"
@@ -54,7 +53,8 @@ void gradient_alpha_search(Parameters parameters, int seed, double eta, double d
 
 }
 
-void do_elliptical(double omega, double alpha, double beta, double a, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength, int seed, int numberOfSteps, double delta_t, bool importanceSampling) {
+// void do_elliptical(double omega, double alpha, double beta, double a, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength, int seed, int numberOfSteps, double delta_t, bool importanceSampling) {
+void do_elliptical(double omega, double alpha, double beta, double a, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength, int seed, int numberOfSteps, double delta_t, bool importanceSampling, bool useNumerical) {
     System* system = new System(
             omega,
             alpha,
@@ -65,7 +65,8 @@ void do_elliptical(double omega, double alpha, double beta, double a, int number
             numberOfParticles,
             equilibration,
             stepLength,
-            seed
+            seed,
+            useNumerical
         );
     system->runMetropolisSteps(numberOfSteps, delta_t, importanceSampling);
 }
@@ -110,14 +111,36 @@ int main() {
 
     cout << "NOTE: The parameters were hijacked by an evil space pirate:((" << endl;
 
-    // parametersVec = {Parameters(0.5, 3, 3, 0.1, true, false)};
-    // parametersVec = {Parameters(0.1, 1, 1, 0.1, true, false)};
-    parametersVec = {Parameters(0.1, 1, 1, 0.1, true, true)};
-    Parameters p = parametersVec[0];
+    // parametersVec = {Parameters(0.5, 3, 3, 0.1, false, false), Parameters(0.5, 3, 3, 0.1, false, true)};
+    parametersVec = {Parameters(0.5, 3, 3, 0.1, false, false)};
 
-    double beta = 2.82843;
-    double a = 0.0043*(1-2e-6);
-    do_elliptical(omega, p.alpha, beta, a, p.numberOfDimensions, p.numberOfParticles, equilibration, stepLength, seed, numberOfSteps, p.delta_t, p.importanceSampling);
+    // Parameters(double alpha, int numberOfDimensions, int numberOfParticles, double delta_t, bool importanceSampling, bool useNumerical) :
+    // Parameters p = parametersVec[0];
+    // double beta = 2.82843;
+    // double a = 0.0043*(1-2e-6);
+
+    // for (auto parameters : parametersVec) {
+    //     do_elliptical(omega, parameters.alpha, beta, a,
+    //             parameters.numberOfDimensions, parameters.numberOfParticles,
+    //             equilibration, stepLength, seed, numberOfSteps,
+    //             parameters.delta_t, parameters.importanceSampling, parameters.useNumerical);
+    // }
+
+    for (auto parameters : parametersVec) {
+        System* system = new System(
+            omega,
+            parameters.alpha,
+            parameters.numberOfDimensions,
+            parameters.numberOfParticles,
+            equilibration,
+            stepLength,
+            parameters.useNumerical,
+            seed
+        );
+
+        system->runMetropolisSteps(numberOfSteps, parameters.delta_t, parameters.importanceSampling);
+    }
+
 
     // double eta   = 1e-1;
     // double delta = 1e-8;

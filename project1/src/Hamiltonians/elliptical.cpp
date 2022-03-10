@@ -6,9 +6,11 @@
 
 using namespace std;
 
-Elliptical::Elliptical(System* system, double omega, double gamma, double a) : Hamiltonian(system) {
+// Elliptical::Elliptical(System* system, double omega, double gamma, double a) : Hamiltonian(system) {
+Elliptical::Elliptical(System* system, double omega, double gamma, double a, bool useNumerical) : Hamiltonian(system) {
     assert(omega > 0);
 
+    useNumerical = useNumerical;
     m_omega = omega;
     m_gamma_squared = gamma * gamma;
     m_a = a;
@@ -28,7 +30,12 @@ double Elliptical::computeLocalEnergy(std::vector<Particle*> particles) {
         }
     }
 
-    double nabla_squared = m_system->getWaveFunction()->computeDoubleDerivativeNumerical(particles);
+    double nabla_squared;
+    if (useNumerical) {
+        nabla_squared = m_system->getWaveFunction()->computeDoubleDerivativeNumerical(particles);
+    } else {
+        nabla_squared = m_system->getWaveFunction()->computeDoubleDerivativeAnalytical(particles);
+    }
 
     double H_dimensionless = 0.5 * (-nabla_squared + r_squared);
 

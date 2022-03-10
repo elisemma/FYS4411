@@ -1,3 +1,4 @@
+#include <iostream>
 #include "project1/system.h"
 #include <cassert>
 #include "project1/sampler.h"
@@ -26,12 +27,25 @@ System::System(double omega, double alpha, int numberOfDimensions, int numberOfP
     setStepLength                      (stepLength);
 }
 
-System::System(double omega, double alpha, double beta, double gamma, double a, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength, int seed) {
+// System::System(double omega, double alpha, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength, bool useNumerical, int seed) {
+//     m_random = new Random(seed);
+//     setHamiltonian                     (new HarmonicOscillator(this, omega, useNumerical));
+//     setWaveFunction                    (new SimpleGaussian(this, alpha));
+//     setInitialState                    (new RandomUniform(this, numberOfDimensions, numberOfParticles));
+//     setEquilibrationFraction           (equilibration);
+//     setStepLength                      (stepLength);
+// }
+
+// System::System(double omega, double alpha, double beta, double gamma, double a, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength, int seed) {
+System::System(double omega, double alpha, double beta, double gamma, double a, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength, int seed, bool useNumerical) {
+    assert(numberOfDimensions == 3 && "The interactive is only implemented for three dimensions");
+
     assert(beta == gamma);
 
     m_random = new Random(seed);
 
-    setHamiltonian                     (new Elliptical(this, omega, beta, a));
+    // setHamiltonian                     (new Elliptical(this, omega, beta, a));
+    setHamiltonian                     (new Elliptical(this, omega, beta, a, useNumerical));
     setWaveFunction                    (new Interactive(this, alpha, beta, a));
     // TODO: Check that the particles are not overlapping for the interactive case, using 
         // for (int j = 0; j < number_of_particles - 1; j++) {
@@ -50,14 +64,27 @@ System::System(double omega, double alpha, double beta, double gamma, double a, 
 }
 
 // TODO: Only update this value
-double System::calculate_r_squared(std::vector<Particle*> particles) {
+// double System::calculate_r_squared(std::vector<Particle*> particles) {
+//     double r_squared = 0;
+//     for (Particle* particle : particles) {
+//         for (double pos_i : particle->getPosition()) {
+//             r_squared += pos_i * pos_i;
+//         }
+//     }
+//     return r_squared;
+// }
+double System::recalculateRSquared() {
     double r_squared = 0;
-    for (Particle* particle : particles) {
+    for (auto particle : getParticles()) {
         for (double pos_i : particle->getPosition()) {
             r_squared += pos_i * pos_i;
         }
     }
     return r_squared;
+}
+
+void System::updateRSquared(double change) {
+    m_r_squared += change;
 }
 
 bool System::metropolisStep(bool importance, double delta_t) {
@@ -74,10 +101,18 @@ bool System::metropolisStep(bool importance, double delta_t) {
 
     if (importance) quantum_before = m_waveFunction->computeQuantumForceAnalytical(particle);
 
+
+    // double old_r_squared = calculate_r_squared(m_particles);
+    double r_change = 0;
     for (int i = 0; i < m_numberOfDimensions; i++) {
         movement[i] = m_stepLength*(m_random->nextDouble() - 0.5);
+        double old_pos = particle->getPosition()[i];
+        r_change += ((old_pos + movement[i]) * (old_pos + movement[i])) - (old_pos * old_pos);
         particle->adjustPosition(movement[i], i);
     }
+    updateRSquared(r_change);
+
+    // updateRSquared(particle->getPosition()[i], particle->getPosition()[i] + movement[i]);
 
     double wave_after = m_waveFunction->evaluate(m_particles);
 
@@ -107,15 +142,24 @@ bool System::metropolisStep(bool importance, double delta_t) {
 
     if (m_random->nextDouble() < ratio) return true;
 
-    for (int i = 0; i < m_numberOfDimensions; i++) particle->adjustPosition(-movement[i], i);
+    for (int i = 0; i < m_numberOfDimensions; i++) {
+        particle->adjustPosition(-movement[i], i);
+    };
+    updateRSquared(-r_change);
 
     return false;
-
-
 }
 
 void System::runMetropolisSteps(int numberOfMetropolisSteps, double delta_t, bool importanceSampling) {
     m_particles                 = m_initialState->getParticles();
+
+    m_r_squared = 0;
+    for (auto particle : getParticles()) {
+        for (auto dim_pos : particle->getPosition()) {
+            m_r_squared += dim_pos * dim_pos;
+        }
+    }
+
     m_sampler                   = new Sampler(this);
     m_numberOfMetropolisSteps   = numberOfMetropolisSteps;
     m_sampler->setNumberOfMetropolisSteps(numberOfMetropolisSteps);
@@ -185,4 +229,8 @@ double System::getDistance(int i, int j) {
     }
 
     return distance;
+}
+
+double System::getRSquared() {
+    return m_r_squared;
 }

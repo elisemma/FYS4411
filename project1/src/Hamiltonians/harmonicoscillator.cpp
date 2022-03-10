@@ -1,4 +1,6 @@
+#include <iostream>
 #include "Hamiltonians/harmonicoscillator.h"
+#include <math.h>
 #include <cassert>
 #include "project1/system.h"
 #include "project1/particle.h"
@@ -34,9 +36,9 @@ double HarmonicOscillator::computeLocalEnergy(std::vector<Particle*> particles) 
      * m_system->getWaveFunction()...
      */
 
-    double double_derivative, r_squared = m_system->calculate_r_squared(particles);
+    double double_derivative; //, r_squared = m_system->calculate_r_squared(particles);
 
-    double potentialEnergy = 0.5 * (m_omega * m_omega) * r_squared;
+    double potentialEnergy = 0.5 * (m_omega * m_omega) * m_system->getRSquared();
 
     if (m_use_numerical) {
         double_derivative = m_system->getWaveFunction()->computeDoubleDerivativeNumerical(particles);

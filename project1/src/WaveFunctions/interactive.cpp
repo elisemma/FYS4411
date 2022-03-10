@@ -7,7 +7,12 @@
 
 using namespace std;
 
+#define rx(i) particles[i]->getPosition()[0]
+#define ry(i) particles[i]->getPosition()[1]
+#define rz(i) particles[i]->getPosition()[2]
+
 Interactive::Interactive(System* system, double alpha_, double beta_, double a_) : WaveFunction(system) {
+    assert(m_system->getNumberOfDimensions() == 3 && "The interactive is only implemented for three dimensions");
     assert(alpha_ >= 0);
     assert(beta_ >= 0);
 
@@ -36,6 +41,7 @@ double Interactive::evaluate(vector<Particle*> particles) {
     double f_product = 1; // f_product seems to be the jastrow factor, nice to meet you!
     for (int j = 0; j < number_of_particles - 1; j++) {
         for (int k = j + 1; k < number_of_particles; k++) {
+            // TODO: Make sure this should not include beta
             double distance = m_system->getDistance(j, k);
 
             if (distance > a) {
@@ -50,18 +56,93 @@ double Interactive::evaluate(vector<Particle*> particles) {
     return g_product * f_product;
 }
 
+double Interactive::r_beta(vector<Particle*> particles, int k) {
+    return rx(k) + ry(k) + beta*rz(k);
+}
+
+double Interactive::r_beta_squared(vector<Particle*> particles, int k) {
+    return rx(k)*rx(k) + ry(k)*ry(k) + beta*rz(k)*rz(k);
+}
+
 // TODO: THESE ARE LIKE BIG TIME WRONG, PLEASE DONT EVER FOREVER USE THEM!!
 double Interactive::computeDoubleDerivativeAnalytical(vector<Particle*> particles) {
+    // TODO: Remove this for the final version
+    // int N = m_system->getNumberOfParticles();
+    //
+    // double laplacian = 0, term_2_sum[3] = {0, 0, 0}, term3_sum = 0, term_4_sum = 0;
+    //
+    // double *r_kj = (double*) malloc(N * N * sizeof(double));
+    // double *r_k_r_j = (double*) malloc(3* N * N * sizeof(double));
+    // double *u_prime_kj = (double*) malloc(N * N * sizeof(double));
+    // double *term_2_sum_terms = (double*) malloc(3 * N * N * sizeof(double));
+    // double *term_4_terms = (double*) malloc(N * N * sizeof(double));
+    //
+    // for (int k = 0; k < N; k++) {
+    //     // TODO: Make sure the term for k=N (N-1) is also included
+    //     for (int j = k+1; j < N; j++) {
+    //         r_kj[k*N + j] = computeDistance(k, j, particles);
+    //
+    //         r_k_r_j[3*(k*N + j) + 0] = particles[k]->getPosition()[0] - particles[j]->getPosition()[0];
+    //         r_k_r_j[3*(k*N + j) + 1] = particles[k]->getPosition()[1] - particles[j]->getPosition()[1];
+    //         r_k_r_j[3*(k*N + j) + 2] = particles[k]->getPosition()[2] - particles[j]->getPosition()[2];
+    //
+    //         u_prime_kj[k*N + j] = computeUPrime(r_kj[k*N + j]);
+    //
+    //         // Term 2
+    //         // TODO: Include the term for k=N (N-1)
+    //         term_2_sum_terms[3*k + 0] = r_k_r_j[3*(k*N + j) + 0] / abs(r_kj[k*N + j]) * u_prime_kj[k*N + j];
+    //         term_2_sum_terms[3*k + 1] = r_k_r_j[3*(k*N + j) + 1] / abs(r_kj[k*N + j]) * u_prime_kj[k*N + j];
+    //         term_2_sum_terms[3*k + 2] = r_k_r_j[3*(k*N + j) + 2] / abs(r_kj[k*N + j]) * u_prime_kj[k*N + j];
+    //
+    //         term_2_sum[0] += term_2_sum_terms[3*k + 0];
+    //         term_2_sum[1] += term_2_sum_terms[3*k + 1];
+    //         term_2_sum[2] += term_2_sum_terms[3*k + 2];
+    //
+    //         // Term 4
+    //         term_4_terms[k*N + j] += computeUDoublePrime(r_kj[k*N + j]) + 2 / r_kj[k*N + j] * u_prime_kj[k*N + j];
+    //         term_4_sum += term_4_terms[k*N + j];
+    //     }
+    // }
+    //
+    // for (int j = 0; j < N; j++) {
+    //     for (int i = 0; i < N; i++) {
+    //
+    //     }
+    // }
+    //
+    // for (size_t k = 0; k < N; k++) {
+    //     // Term 1
+    //     // TODO: Are these squared?
+    //     double r_k_beta_squared = r_beta_squared(particles, k);
+    //     laplacian += 2 * alpha * (2 * alpha * r_k_beta_squared - (2 + beta));
+    // }
+
     double laplacian = 0;
 
-    for (int k = 0; k < m_system->getNumberOfParticles(); k++) {
+    // double *r_kj = (double*) malloc(particles.size() * particles.size() * sizeof(double));
+    // double *u_kj_prime = (double*) malloc(particles.size() * particles.size() * sizeof(double));
+
+    // TODO: Can we get away with only filling the upper triangle?
+    // for (size_t k = 0; k < particles.size(); k++) {
+    //     r_kj[k * N+k] = 0;
+    //     for (size_t j = k+1; j < particles.size(); j++) {
+    //         r_kj[k*N + j] = computeDistance(k, j, particles);
+    //         r_kj[j*N + k] = r_kj[k*N + j];
+    //
+    //
+    //         u_kj_prime[k*N + j] = computeUPrime(k, j, r_kj[k*N + j]);
+    //     }
+    // }
+
+    for (size_t k = 0; k < particles.size(); k++) {
         laplacian += computeLaplacianK(particles, k);
     }
 
     return laplacian;
 }
 
-double Interactive::computeLaplacianK(vector<Particle*> particles, int k) {
+// double Interactive::computeLaplacianK(vector<Particle*> particles, int k) {
+double Interactive::computeLaplacianK(vector<Particle*> particles, size_t k) {
     // Term 1
     double term1 = 0;
     double r_squared_with_beta = 0;
@@ -75,91 +156,193 @@ double Interactive::computeLaplacianK(vector<Particle*> particles, int k) {
     
     // Term 2
     double term2 = 0;
-    for (int i = 0; i < m_system->getNumberOfParticles(); i++) {
+    for (size_t i = 0; i < particles.size(); i++) {
         if (i == k) continue;
 
-        double r_ki = computeDistance(k, i);
+        double r_ki = computeDistance(k, i, particles);
 
         for (int dim = 0; dim < m_system->getNumberOfDimensions(); dim++) {
-            double nabla_phi = - 4 * alpha * particles[k]->getPosition()[dim];
+            double nabla_phi = - 2 * 2 * alpha * particles[k]->getPosition()[dim];
             if (dim == 2) nabla_phi *= beta;
 
             double r_k_r_i = particles[k]->getPosition()[dim] - particles[i]->getPosition()[dim];
 
-            term2 += - 2 * nabla_phi * (r_k_r_i / r_ki)  * computeUPrime(i, k);
+            term2 += - 2 * nabla_phi * (r_k_r_i / r_ki)  * computeUPrime(computeDistance(k, i, particles));
         }
     }
 
     // Term 3
     double term3 = 0;
 
-    for (int i = 0; i < m_system->getNumberOfParticles(); i++) {
+    for (size_t i = 0; i < particles.size(); i++) {
         if (i == k) continue;
 
-        for (int j = 0; j < m_system->getNumberOfParticles(); j++) {
+        for (size_t j = 0; j < particles.size(); j++) {
             if (j == k) continue;
             
-            double r_ki = computeDistance(k, j);
-            double r_kj = computeDistance(k, i);
+            double r_ki = computeDistance(k, j, particles);
+            double r_kj = computeDistance(k, i, particles);
 
             for (int dim = 0; dim < m_system->getNumberOfDimensions(); dim++) {
                 double r_k_r_i = particles[k]->getPosition()[dim] - particles[i]->getPosition()[dim];
                 double r_k_r_j = particles[k]->getPosition()[dim] - particles[j]->getPosition()[dim];
 
-                term3 += (r_k_r_i * r_k_r_j) / (r_ki * r_kj) * computeUPrime(k, i) * computeUPrime(k, j);
+                term3 += (r_k_r_i * r_k_r_j) / (r_ki * r_kj) * computeUPrime(computeDistance(k, i, particles)) * computeUPrime(computeDistance(k, j, particles));
             }
         }
     }
 
     // Term 4
     double term4 = 0;
-    for (int i = 0; i < m_system->getNumberOfParticles(); i++) {
+    for (size_t i = 0; i < particles.size(); i++) {
         if (i == k) continue;
 
-        double r_ki = computeDistance(k, i);
+        double r_ki = computeDistance(k, i, particles);
 
         // TODO: i term 4 flytter vi på leddene
-        term4 += 2 / r_ki * computeUPrime(k, i) + computeUDoublePrime(k, i);
+        term4 += 2 / r_ki * computeUPrime(computeDistance(k, i, particles)) + computeUDoublePrime(computeDistance(k, i, particles));
     }
 
     return term1 + term2 + term3 + term4;
 }
 
-double Interactive::computeUPrime(int k, int i) {
-    double r_ki = computeDistance(k, i);
-    return a / (r_ki * (r_ki - a));
-}
-
-double Interactive::computeUDoublePrime(int i, int k) {
-    double r_ki = computeDistance(k, i);
-    return a * (a - 2*r_ki) / ((r_ki * r_ki) * (r_ki-a) * (r_ki-a));
-}
-
-double Interactive::computeDistance(int k, int j) {
-    double distance = 0;
-    for (int dim = 0; dim < m_system->getNumberOfDimensions(); dim++) {
-        double single_distance = m_system->getParticles()[k]->getPosition()[dim] - m_system->getParticles()[j]->getPosition()[dim];
-        distance += single_distance * single_distance;
+double Interactive::computeU(double r_kj) {
+    // TODO: Do I need to check if it is smaller than a?
+    if (r_kj <= a) {
+        return 0;
+    } else {
+        return 1 - a/r_kj;
     }
-    return sqrt(distance);
 }
+
+
+double Interactive::computeUPrime(double r_kj) {
+    // double r_ki = computeDistance(k, i, particles);
+    return a / (r_kj * (r_kj - a));
+}
+
+double Interactive::computeUDoublePrime(double r_kj) {
+    return a * (a - 2*r_kj) / ((r_kj * r_kj) * (r_kj-a) * (r_kj-a));
+}
+
+double Interactive::computeDistance(int k, int j, vector<Particle*> particles) {
+    // double distance = 0;
+    // for (int dim = 0; dim < m_system->getNumberOfDimensions(); dim++) {
+    //     double single_distance = particles[k]->getPosition()[dim] - particles[j]->getPosition()[dim];
+    //     distance += single_distance * single_distance;
+    // }
+    return sqrt((rx(k)-rx(j))*(rx(k)-rx(j)) + (ry(k)-ry(j))*(ry(k)-ry(j)) + (rz(k)-rz(j))*(rz(k)-rz(j)));
+}
+
 
 vector<double> Interactive::computeQuantumForceAnalytical(Particle* particle) {
-    vector<double> force;
-    for (auto dimension_pos : particle->getPosition()) {
-        force.push_back(-4*alpha*dimension_pos);
-    }
+    vector<double> force = {
+        -4 * alpha *        particle->getPosition()[0],
+        -4 * alpha *        particle->getPosition()[1],
+        -4 * alpha * beta * particle->getPosition()[2],
+    };
+
     return force;
 }
 
 
 double Interactive::computeDerivative(vector<Particle*> particles) {
-    // And do we want the -2? (mostly because I have seen them a few times before, and not particularly because I think they would fit)
-
-    double r_squared = m_system->calculate_r_squared(particles);
-    return -r_squared;
-    // return -2*alpha * r_squared;
-    // double minus_alpha_r_squared = - alpha * m_system->calculate_r_squared(particles);
+    // double phi_prod = 0;
     //
-    // return minus_alpha_r_squared * exp(minus_alpha_r_squared);
+    // double *phi = (double*) malloc(particles.size() * sizeof(double));
+    // double *nabla_phi = (double*) malloc(particles.size() * sizeof(double));
+    // double u_j_lt_m_sum = 0;
+    // double *nabla_u = (double*) malloc(particles.size() * sizeof(double));
+    //
+    // double *r_ij = (double*) malloc(particles.size() * particles.size() * sizeof(double));
+    //
+    // for (size_t k = 0; k < particles.size(); k++) {
+    //     phi[k] = exp(-alpha * (rx(k)*rx(k) + ry(k)*ry(k) + beta * rz(k) * rz(k)));
+    //     phi_prod *= phi[k];
+    //     nabla_phi[k] = -2 * alpha * r_beta(particles, k) * exp(-alpha * r_beta_squared(particles, k));
+    //
+    //     // TODO: Make sure we dont need anything outside the upper triangular
+    //     for (size_t j = k+1; j < particles.size(); j++) {
+    //         r_ij[k*particles.size() + j] = computeDistance(k, j, particles);
+    //         r_ij[j*particles.size() + k] = r_ij[k*particles.size() + j];
+    //
+    //         u_j_lt_m_sum += computeU(computeDistance(k, j, particles));
+    //
+    //         // nabla_u[k*particles.size() + j] = ;
+    //         // nabla_k
+    //
+    //         double nabla_k_x =
+    //     }
+    // }
+    // double exp_u_j_lt_m_sum = exp(u_j_lt_m_sum);
+    //
+    // for (int k = 0; k < m_system->getNumberOfDimensions(); k++) {
+    //     computeNablaK(k, phi_prod, phi, nabla_phi, exp_u_j_lt_m_sum);
+    // }
+    double nabla = 0;
+
+    for (size_t k = 0; k < particles.size(); k++) {
+        nabla += computeNablaK(particles, k);
+    }
+
+    assert(false && "Not finished yet!");
+
+    return nabla;
 }
+
+
+
+double Interactive::computeNablaK(vector<Particle*> particles, size_t k) {
+    double nabla_k = 0;
+
+    // Term 1
+    double term1 = 0;
+    // part 1
+    double term_1_part_1 = -2 * alpha * r_beta(particles, k) * exp(-alpha * r_beta_squared(particles, k));
+    // part 2
+    double term_1_part_2 = 1;
+    for (size_t i = 0; i < particles.size(); i++) {
+        if (i == k) continue;
+        term_1_part_2 *= exp(-alpha * (rx(k)*rx(k) + ry(k)*ry(k) + beta * rz(k) * rz(k)));
+    }
+    // part 3
+    double u_j_lt_m_sum = 0;
+    for (size_t k = 0; k < particles.size(); k++) {
+        for (size_t j = k+1; j < particles.size(); j++) {
+            u_j_lt_m_sum += computeU(computeDistance(k, j, particles));
+        }
+    }
+    double term_1_part_3 = exp(u_j_lt_m_sum);
+
+    term1 = term_1_part_1 * term_1_part_2 * term_1_part_3;
+
+    // Term 2
+    double term2 = 0;
+    // part 1
+    double term_2_part_1 = term_1_part_2 * exp(-alpha * (rx(k)*rx(k) + ry(k)*ry(k) + beta * rz(k) * rz(k)));
+    // part 2
+    double term_2_part_2 = term_1_part_3;
+
+
+}
+
+
+
+// double Interactive::computeNablaK(int k, double phi_prod, double *phi, double *nabla_phi, double exp_u_j_lt_m_sum) {
+//     // Assuming that the number of dimensions is 3
+//
+//     double term1 = nabla_phi[k] * (phi_prod / phi[k]) * exp_u_j_lt_m_sum;
+//
+//     double term2 = phi_prod * exp_u_j_lt_m_sum; // TODO: Add the last term
+//
+//
+//     return term1 + term2;
+//     // for (int dim = 0; dim < m_system->getNumberOfDimensions(); dim++) {
+//     //     // double nabla_phi = - 4 * alpha * particles[k]->getPosition()[dim];
+//     //     if (dim == 2) nabla_phi *= beta;
+//     //
+//     //     // double r_k_r_i = particles[k]->getPosition()[dim] - particles[i]->getPosition()[dim];
+//     //
+//     //     // term2 += - 2 * nabla_phi * (r_k_r_i / r_ki)  * computeUPrime(i, k);
+//     // }
+// }

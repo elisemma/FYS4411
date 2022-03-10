@@ -174,6 +174,7 @@ void System::setInitialState(InitialState* initialState) {
 
 // TODO: Calculate all the distances at once for improved speed
 // double System::getDistance(std::vector<Particle*> particles, int i, int j) {
+// TODO: Move this away, since it is different for the interactive system
 double System::getDistance(int i, int j) {
     vector<double> pos_i = m_particles[i]->getPosition();
     vector<double> pos_j = m_particles[j]->getPosition();

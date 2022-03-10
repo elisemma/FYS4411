@@ -9,15 +9,20 @@ public:
     double computeDoubleDerivativeAnalytical(std::vector<Particle*> particles);
     // double computeDoubleDerivativeNumerical(std::vector<Particle*> particles);
     std::vector<double> computeQuantumForceAnalytical(Particle* particles);
-    double computeDerivative(std::vector<class Particle*> particles);
+    double computeDerivative(std::vector<Particle*> particles);
 private:
-    double getDistance(std::vector<class Particle*> particles, int i, int j);
+    double r_beta(std::vector<Particle*> particles, int k);
+    double r_beta_squared(std::vector<Particle*> particles, int k);
+    double getDistance(std::vector<Particle*> particles, int i, int j);
     double computePhiLaplacian();
-    double computeDistance(int k, int j);
-    double computeUPrime(int k, int i);
-    double computeNaplaK(std::vector<Particle*> particles);
-    double computeLaplacianK(std::vector<Particle*> particles, int k);
-    double computeUDoublePrime(int k, int i);
+    double computeDistance(int k, int j, std::vector<Particle*> particles);
+    double computeU(double r_kj);
+    double computeUPrime(double r_kj);
+    double computeUDoublePrime(double r_kj);
+    // double computeLaplacianK(std::vector<Particle*> particles, int k);
+    // double computeNablaK(int k, double phi_prod, double *phi, double *nabla_phi, double exp_u_j_lt_m_sum);
+    double computeNablaK(std::vector<Particle*> particles, std::size_t k);
+    double computeLaplacianK(std::vector<Particle*> particles, std::size_t k);
     // double computePhiNabla();
     double a;
     double beta;

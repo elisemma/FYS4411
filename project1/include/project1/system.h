@@ -1,58 +1,39 @@
 #pragma once
+
 #include <vector>
-#include <Math/random.h>
+#include <random>
+#include <fstream>
+
+#include "project1/random_engine.h"
+#include "project1/wave_functions/wave_function.h"
+#include "project1/parameters.h"
 
 class System {
-public:
-    // System(double omega, double alpha, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength, bool useNumerical);
-    System(double omega, double alpha, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength, bool useNumerical, int seed);
-    // System(double omega, double alpha, double beta, double gamma, double a, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength, int seed);
-    System(double omega, double alpha, double beta, double gamma, double a, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength, int seed, bool useNumerical);
+    public:
+        System(Parameters parameters);
+        ~System();
+        void run_simulation();
 
-    bool metropolisStep             (bool importance, double delta_t);
-    void runMetropolisSteps         (int numberOfMetropolisSteps, double delta_t, bool importanceSampling);
-    void setNumberOfParticles       (int numberOfParticles);
-    void setNumberOfDimensions      (int numberOfDimensions);
-    void setStepLength              (double stepLength);
-    void setEquilibrationFraction   (double equilibrationFraction);
-    void setHamiltonian             (class Hamiltonian* hamiltonian);
-    void setWaveFunction            (class WaveFunction* waveFunction);
-    void setInitialState            (class InitialState* initialState);
-    class WaveFunction*             getWaveFunction()   { return m_waveFunction; }
-    class Hamiltonian*              getHamiltonian()    { return m_hamiltonian; }
-    class Sampler*                  getSampler()        { return m_sampler; }
-    std::vector<class Particle*>    getParticles()      { return m_particles; }
-    class Random*                   getRandomEngine()   { return m_random; }
-    double getEnergy                () { return m_energy; };
-    double getEnergyVariance        () { return m_energyVariance; };
-    double getStepLength()              { return m_stepLength; }
-    int getNumberOfParticles()          { return m_numberOfParticles; }
-    int getNumberOfDimensions()         { return m_numberOfDimensions; }
-    int getNumberOfMetropolisSteps()    { return m_numberOfMetropolisSteps; }
-    double getEquilibrationFraction()   { return m_equilibrationFraction; }
-    // double calculate_r_squared(std::vector<Particle*> particles);
-    double recalculateRSquared();
-    double getAlphaDerivativeChange()   {return m_alphaDerivativeChange; }
-    double getDistance(int i, int j);
-    double getRSquared();
-    void   updateRSquared(double change);
+        // Variables for output
+        double accepted_ratio, energy_expectation, energy_variance, alpha_derivative;
 
+        void write_system_data_to_file();
+    private:
+        // Functions
+        bool metropolis_step();
+        bool importance_metropolis_step();
+        void initialize_particles(int num_particles, int dimensions);
 
-private:
-    int                             m_numberOfParticles = 0;
-    int                             m_numberOfDimensions = 0;
-    int                             m_numberOfMetropolisSteps = 0;
-    double                          m_equilibrationFraction = 0.0;
-    double                          m_stepLength = 0.1;
-    class WaveFunction*             m_waveFunction = nullptr;
-    class Hamiltonian*              m_hamiltonian = nullptr;
-    class InitialState*             m_initialState = nullptr;
-    class Sampler*                  m_sampler = nullptr;
-    std::vector<class Particle*>    m_particles = std::vector<class Particle*>();
-    class Random*                   m_random = nullptr;
-    double                          m_alphaDerivativeChange;
-    double                          m_energy;
-    double                          m_energyVariance;
-    double                          m_acceptedMetropolisStepRatio;
-    double                          m_r_squared;
+        // Other classes
+        WaveFunction* wave_function;
+        RandomEngine random_engine;
+
+        // General variables
+        double *particles;
+        double *one_body_densities;
+        int num_particles, dimensions;
+        double delta_t;
+        double *energies;
+        bool importance_sampling;
+        std::string system_data_filename;
 };

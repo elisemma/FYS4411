@@ -33,7 +33,7 @@ OBJECTS = $(SOURCES:$(SRC_PATH)/%.$(SRC_EXT)=$(BUILD_PATH)/%.o)
 DEPS = $(OBJECTS:.o=.d)
 
 # flags #
-COMPILE_FLAGS = -std=c++11 -Wall -Wextra -g -fopenmp
+COMPILE_FLAGS = -std=c++11 -Wall -Wextra -g -fopenmp -O3
 INCLUDES = -I include/ -I /usr/local/include
 # Space-separated pkg-config libraries used by this project
 # LIBS = -larmadillo
@@ -66,10 +66,11 @@ clean:
 # checks the executable and symlinks to the output
 .PHONY: all
 all: $(BIN_PATH)/$(BIN_NAME)
+	@mkdir -p output/data
+	@mkdir -p output/gradient
+	@mkdir -p output/one_body
 	@$(RM) $(BIN_NAME)
 	@ln -s $(BIN_PATH)/$(BIN_NAME) $(BIN_NAME)
-	@echo "Running!"
-	./$(BIN_NAME)
 
 # Creation of the executable
 $(BIN_PATH)/$(BIN_NAME): $(OBJECTS)

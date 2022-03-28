@@ -1,0 +1,84 @@
+#+TITLE: Variational Monte Carlo Simulations for Elliptical and Spherical Bose Gas
+
+This repo contains the code used to run the variational monte carlo simulation
+for elliptical and spherical bose gas and code for doing analysis on the
+results.
+
+** Installation
+
+*** C++
+
+The simulation code written in C++ can be run without any external libraries,
+but requires C++ 11.
+
+#+begin_src shell
+make
+#+end_src
+
+This will create an executable in ~build/bin/runner~ and create a symbolic link to it called ~runner~
+
+*** Python
+
+Use the package manger [[https://pip.pypa.io/en/stable/][pip]] to install the required packages.
+
+#+begin_src shell
+pip install -r requirements.txt
+#+end_src
+
+** Usage
+
+*** Simulation
+
+The simulation can be run by executing the executable ~runner~
+
+#+begin_src shell
+./runner
+#+end_src
+
+This will run all the simulations and write output to the ~output~ folder.
+
+*** Analysis
+
+The analysis obviously requires all the simulations to be run first. The options when running the analysis is as follows:
+
+#+begin_src sh :results code
+python src/analysis.py -h
+#+end_src
+
+#+begin_src sh
+usage: A program for doing different analysis for the boson simulation
+       [-h] [-g] [-e] [-d] [-b] [-c] [-o] [-a]
+
+options:
+  -h, --help      show this help message and exit
+  -g, --gradient  Plot the gradient descent
+  -e, --energy    Plot the energy
+  -d, --delta-t   Plot the delta t
+  -b, --block     Do statistical analyis using blocking
+  -c, --cpu-time  Plot the cpu time
+  -o, --one-body  Plot the one body density
+  -a, --all       Create all the plots
+#+end_src
+
+
+
+** File structure
+
+#+begin_src ditaa
+.
+├── include                           -  contains all the header files
+├── makefile                          -  makefile for building the c++ code
+├── report.pdf                        -  a report describing the project
+├── requirements.txt                  -  requirements
+└── src                               -  contains all the python and c++ scripts
+   ├── analysis.py                    -  for running analysis and creating plots
+   ├── blocking.py                    -  for doing the statistical analysis with blocking
+   ├── main.cpp                       -  main script for running the simulatoin
+   ├── random_engine.cpp              -  a wrapper around mt19937 for generating random numbers
+   ├── system.cpp                     -  contains the system, which is used for running the specific simulation
+   └── wave_functions                 -  contains the different wave functions
+      ├── interactive_elliptical.cpp  -  contains the code for the elliptical system with jastrow
+      ├── simple.cpp                  -  abstract class containing methods for the spherical system
+      ├── simple_analytical.cpp       -  implements the laplacian for the spherical system analytically
+      └── simple_numerical.cpp        -  implements the laplacian for the spherical system numerically
+#+end_src

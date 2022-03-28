@@ -1,176 +1,181 @@
+#include <iomanip>
 #include <iostream>
-#include <vector>
+#include <chrono>
+#include "project1/system_enum.h"
 #include "project1/system.h"
-#include "project1/particle.h"
-#include "WaveFunctions/wavefunction.h"
-#include "Hamiltonians/hamiltonian.h"
-#include "Hamiltonians/harmonicoscillator.h"
-#include "InitialStates/initialstate.h"
-#include "InitialStates/randomuniform.h"
-#include "Math/random.h"
-#include <fstream>
+#include "project1/constants.h"
+#include "project1/parameters.h"
 
+#define RED "\033[1;31m"
+#define GREEN "\033[1;32m"
+#define YELLOW "\033[1;33m"
+#define BLUE "\033[1;34m"
+#define MAGENTA "\033[1;35m"
+#define CYAN "\033[1;36m"
+#define BOLD "\033[1m"
+#define RESET "\033[0m"
 
 using namespace std;
 
-struct Parameters {
-    double alpha, delta_t, energy;
-    int numberOfDimensions, numberOfParticles;
-    bool importanceSampling, useNumerical;
+void run_systems(vector<Parameters*> parameters_vec, string filename) {
+    #pragma omp parallel for schedule(dynamic)
+    for (Parameters *parameters : parameters_vec) {
+        System system(*parameters);
+        auto start = chrono::high_resolution_clock::now();
+        system.run_simulation();
+        auto end = chrono::high_resolution_clock::now();
+        auto duration_ms = chrono::duration_cast<chrono::milliseconds>(end - start).count();
 
-    Parameters(double alpha, int numberOfDimensions, int numberOfParticles, double delta_t, bool importanceSampling, bool useNumerical) :
-        alpha(alpha), delta_t(delta_t), numberOfDimensions(numberOfDimensions), numberOfParticles(numberOfParticles), importanceSampling(importanceSampling), useNumerical(useNumerical) {}
-};
+        parameters->energy_expectation = system.energy_expectation;
+        parameters->energy_variance = system.energy_variance;
+        parameters->accepted_ratio = system.accepted_ratio;
+        parameters->time_ms = duration_ms;
 
-void gradient_alpha_search(Parameters parameters, int seed, double eta, double delta) {
-    //for (auto &parameters : parametersVec) {
-    double omega              = 1.0;          // Oscillator frequency.
-    double stepLength         = 0.1;
-    double equilibration      = 0.1;          // Amount of the total steps used
-    int    numberOfSteps      = (int) 1e6;
-    double alpha              = parameters.alpha;
-    double alpha_change       = 1;
+        cout << BOLD << system_enum_to_string(parameters->system_enum) << RESET
+            << " with " << BOLD << parameters->num_particles << RESET
+            << " particles, " << BOLD << parameters->dimensions << RESET
+            << " dim and " << round(parameters->alpha*100)/100
+            << " alpha " << RED << "done" << RESET
+            << " in " << CYAN << duration_ms << RESET <<
+            " ms" << endl;
 
-    while (abs(alpha_change) > delta) {
-        System* system = new System(
-                omega,
-                alpha,
-                parameters.numberOfDimensions,
-                parameters.numberOfParticles,
-                equilibration,
-                stepLength,
-                parameters.useNumerical,
-                seed
-            );
-
-        system->runMetropolisSteps(numberOfSteps, parameters.delta_t, parameters.importanceSampling);
-
-        alpha_change = eta * system->getAlphaDerivativeChange();
-        alpha -= alpha_change;
-
-        cout << "alpha: " << alpha << " alpha_change: " << alpha_change << endl;
+        if (parameters->energy_filename != "") {
+            system.write_system_data_to_file(); 
+        }
     }
 
+    ofstream file(filename);
+    write_heading(file);
+    for (auto parameters : parameters_vec) {
+        parameters->add_to_file(file);
+    }
 }
 
-// void do_elliptical(double omega, double alpha, double beta, double a, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength, int seed, int numberOfSteps, double delta_t, bool importanceSampling) {
-void do_elliptical(double omega, double alpha, double beta, double a, int numberOfDimensions, int numberOfParticles, double equilibration, double stepLength, int seed, int numberOfSteps, double delta_t, bool importanceSampling, bool useNumerical) {
-    System* system = new System(
-            omega,
-            alpha,
-            beta,
-            beta,
-            a,
-            numberOfDimensions,
-            numberOfParticles,
-            equilibration,
-            stepLength,
-            seed,
-            useNumerical
-        );
-    system->runMetropolisSteps(numberOfSteps, delta_t, importanceSampling);
+void gradient_alpha_search(vector<Parameters*> parameters_vec, double learning_rate, double delta) {
+    #pragma omp parallel for schedule(dynamic)
+    for (auto parameters : parameters_vec) {
+        double alpha_change = 0;
+        double alpha_0 = parameters->alpha;
+        double specific_learning_rate = learning_rate / parameters->num_particles ;
+        vector<double> alpha_vec;
+        vector<double> energy_vec;
+        int i = 0;
+
+        do {
+            System system(*parameters);
+            system.run_simulation();
+
+            alpha_vec.push_back(parameters->alpha);
+            energy_vec.push_back(system.energy_expectation);
+
+            cout << "Iter " << BOLD << (i+1) << RESET << ") " << BOLD << to_string(parameters->num_particles) << RESET << 
+                " particles, a_0=" << BOLD << alpha_0 << RESET <<  ", alpha: " <<
+                BOLD << parameters->alpha << RESET << ", change: " << BOLD <<
+                specific_learning_rate*system.alpha_derivative << RESET <<
+                endl;
+            alpha_change = specific_learning_rate * system.alpha_derivative;
+            parameters->alpha -= alpha_change;
+            i++;
+        } while (abs(alpha_change) > delta && i < 50);
+
+        ofstream file("output/gradient/alpha_" + to_string(alpha_0) + "&system_enum=" + system_enum_to_string(parameters->system_enum) + "&particles=" + to_string(parameters->num_particles) + ".tsv");
+        file << setprecision(15);
+        file << "alpha\tenergy" << endl;
+        for (size_t i = 0; i < alpha_vec.size(); i++) {
+            file << alpha_vec[i] << "\t" << energy_vec[i] << endl;
+        }
+        file.close();
+        cout << RED << "Finished" << RESET << " with " <<
+            system_enum_to_string(parameters->system_enum) << " " <<
+            to_string(parameters->num_particles) << " particles, a_0=" <<
+            to_string(alpha_0) << " in " << (i+1) << " iteractions" << endl;
+        cout << endl;
+    }
+}
+
+void clear_parameter_vec(vector<Parameters*> &parameters_vec) {
+    for (auto parameter : parameters_vec) {
+        delete parameter;
+    }
+
+    parameters_vec.clear();
 }
 
 int main() {
-    // Seed for the random number generator
-    int seed = 42;
+    cout << setprecision(15);
 
-    // int    numberOfDimensions = 1;
-    // int    numberOfParticles  = 1;
-    int    numberOfSteps      = (int) 1e6;
-    double omega              = 1.0;          // Oscillator frequency.
-    // double alpha              = 0.5;          // Variational parameter.
-    double stepLength         = 0.1;          // Metropolis step length.
-    double equilibration      = 0.1;          // Amount of the total steps used
-    // for equilibration.
-    // double delta_t            = 0.001;        // time step
+    auto start_time = chrono::high_resolution_clock::now();
+    int default_num_dimensions = 3;
+    double default_delta_t = 0.5;
 
-    // vector<int> numberOfDimensionsVec{1, 2, 3};
-    vector<int> numberOfDimensionsVec{3};
-    // vector<int> numberOfParticlesVec{1, 4, 6};
-    vector<int> numberOfParticlesVec{3};
-    vector<double> delta_tVec{0.1, 1000};
-    // int numberOfParticlesArray[] = {100};
+    double alphas[] = {0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.60, 0.65, 0.7};
 
-    // double alpha_values[] = {0.01, 0.06, 0.11, 0.16, 0.21, 0.26, 0.31, 0.36, 0.41, 0.46, 0.51, 0.56, 0.61, 0.66, 0.71, 0.76, 0.81, 0.86, 0.91, 0.96};
-    //vector<double> alphaVec{0.01, 0.21, 0.41, 0.61, 0.81, 0.96};
-    vector<double> alphaVec{0.5};
+    // Test accepted ratio for different delta_ts
+    double delta_ts[] = {2, 1.5, 1, 0.75, 0.6, 0.55, 0.5, 0.45, 0.4, 0.25, 0.1, 0.05, 0.025};
+    vector<Parameters*> parameters_vec;
+    for (auto system_enum : {SIMPLE_ANALYTICAL, SIMPLE_ANALYTICAL_IMPORTANCE}) {
+        double alpha = 0.5;
+        for (auto delta_t : delta_ts) {
+            parameters_vec.push_back(new Parameters(10, default_num_dimensions, alpha, delta_t, system_enum));
+        }
+    }
+    run_systems(parameters_vec, "output/delta_t_acceptence_rate.tsv");
 
-    vector<bool> importanceSamplingVec{true, false};
-    vector<bool> useNumericalVec{true, false};
+    // Gradient descent on alpha
+    clear_parameter_vec(parameters_vec);
+    for (auto num_particles : {1, 10 ,50, 100})
+        for (double alpha : alphas)
+            parameters_vec.push_back(new Parameters(num_particles, default_num_dimensions, alpha, default_delta_t, SIMPLE_ANALYTICAL));
+    gradient_alpha_search(parameters_vec, 0.05, 1e-8);
 
-    vector<Parameters> parametersVec;
+    clear_parameter_vec(parameters_vec);
+    for (auto num_particles : {1, 10 ,50, 100})
+        for (double alpha : alphas)
+            parameters_vec.push_back(new Parameters(num_particles, default_num_dimensions, alpha, default_delta_t, INTERACTIVE));
+    gradient_alpha_search(parameters_vec, 0.05, 1e-5);
 
-    for (double alpha : alphaVec)
-        for (int numberOfDimensions : numberOfDimensionsVec)
-            for (int numberOfParticles : numberOfParticlesVec)
-                for (double delta_t : delta_tVec)
-                    for (bool importanceSampling : importanceSamplingVec)
-                        for (bool useNumerical : useNumericalVec)
-                            parametersVec.push_back(Parameters(alpha, numberOfDimensions, numberOfParticles, delta_t, importanceSampling, useNumerical));
+    clear_parameter_vec(parameters_vec);
+    for (SystemEnum system_enum : {SIMPLE_ANALYTICAL, SIMPLE_NUMERICAL, SIMPLE_ANALYTICAL_IMPORTANCE}) {
+        double delta_t;
+        delta_t = 0.5;
 
-    cout << "NOTE: The parameters were hijacked by an evil space pirate:((" << endl;
+        for (double num_particles : {1, 10, 100, 500})
+            for (double dimensions : {1, 2, 3})
+                for (double alpha : alphas)
+                    parameters_vec.push_back(
+                        new Parameters(num_particles, dimensions, alpha, delta_t, system_enum)
+                    );
+    }
+    run_systems(parameters_vec, "output/simple.tsv");
 
-    // parametersVec = {Parameters(0.5, 3, 3, 0.1, false, false), Parameters(0.5, 3, 3, 0.1, false, true)};
-    parametersVec = {Parameters(0.5, 3, 3, 0.1, false, false)};
+    // Run interactive system
+    clear_parameter_vec(parameters_vec);
+    double interactive_dimensions = 3;
+    for (double num_particles : {10, 50, 100}) {
+        for (double alpha : alphas)
+            parameters_vec.push_back(
+                new Parameters(num_particles, interactive_dimensions, alpha, default_delta_t, INTERACTIVE)
+            );
+    }
+    run_systems(parameters_vec, "output/interactive.tsv");
 
-    // Parameters(double alpha, int numberOfDimensions, int numberOfParticles, double delta_t, bool importanceSampling, bool useNumerical) :
-    // Parameters p = parametersVec[0];
-    // double beta = 2.82843;
-    // double a = 0.0043*(1-2e-6);
+    // Run jastrow analysis
+    clear_parameter_vec(parameters_vec);
+    for (int num_particles : {10, 50, 100})
+        for (SystemEnum system_enum : {INTERACTIVE, NO_JASTROW})
+            parameters_vec.push_back(
+                new Parameters(num_particles, interactive_dimensions, 0.5, default_delta_t, system_enum, "output/data/" + system_enum_to_string(system_enum) + "&particles=" + to_string(num_particles))
+            );
+    run_systems(parameters_vec, "output/jastrow.tsv");
 
-    // for (auto parameters : parametersVec) {
-    //     do_elliptical(omega, parameters.alpha, beta, a,
-    //             parameters.numberOfDimensions, parameters.numberOfParticles,
-    //             equilibration, stepLength, seed, numberOfSteps,
-    //             parameters.delta_t, parameters.importanceSampling, parameters.useNumerical);
-    // }
-
-    for (auto parameters : parametersVec) {
-        System* system = new System(
-            omega,
-            parameters.alpha,
-            parameters.numberOfDimensions,
-            parameters.numberOfParticles,
-            equilibration,
-            stepLength,
-            parameters.useNumerical,
-            seed
-        );
-
-        system->runMetropolisSteps(numberOfSteps, parameters.delta_t, parameters.importanceSampling);
+    for (auto parameter : parameters_vec) {
+        delete parameter;
     }
 
+    auto stop_time = chrono::high_resolution_clock::now();
+    auto big_duration_ms = chrono::duration_cast<chrono::nanoseconds>(stop_time - start_time).count();
 
-    // double eta   = 1e-1;
-    // double delta = 1e-8;
-    // gradient_alpha_search(parametersVec[0], seed, eta, delta);
-    // exit(68);
-    //
-    // #pragma omp parallel for schedule(dynamic)
-    // for (auto &parameters : parametersVec) {
-    //     System* system = new System(
-    //         omega,
-    //         parameters.alpha,
-    //         parameters.numberOfDimensions,
-    //         parameters.numberOfParticles,
-    //         equilibration,
-    //         stepLength,
-    //         parameters.useNumerical,
-    //         seed
-    //     );
-    //
-    //     system->runMetropolisSteps(numberOfSteps, parameters.delta_t, parameters.importanceSampling);
-    //     double energy = system->getEnergy();
-    //
-    //     parameters.energy = energy;
-    // }
-    //
-    // ofstream energyFile("output/data/energy_values.tsv");
-    // energyFile << "alpha\tnumberOfDimensions\tnumberOfParticles\tdt\timportanceSampling\tenergy" << endl;
-    // for (auto parameters : parametersVec)
-    //     energyFile << parameters.alpha << "\t" << parameters.numberOfDimensions << "\t" << parameters.numberOfParticles << "\t" << parameters.delta_t << "\t" << parameters.importanceSampling << "\t" << parameters.energy << endl;
-    // energyFile.close();
+    cout << "Total running time: " << big_duration_ms << " ns" << endl;
 
     return 0;
 }
